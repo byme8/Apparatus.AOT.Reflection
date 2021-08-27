@@ -82,6 +82,11 @@ namespace AttributesExtractor
 
         private static string Convert(TypedConstant typedConstant)
         {
+            if (typedConstant.Kind == TypedConstantKind.Array && !typedConstant.IsNull)
+            {
+                return $"new[] {typedConstant.ToCSharpString()}";
+            }
+            
             return typedConstant.ToCSharpString();
         }
         

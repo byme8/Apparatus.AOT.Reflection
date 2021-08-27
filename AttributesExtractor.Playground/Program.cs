@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace AttributesExtractor.Playground
 {
@@ -7,13 +8,14 @@ namespace AttributesExtractor.Playground
         [Required]
         // place to replace 2
         public string FirstName { get; set; }
+
         [Required]
-        public string LastName {  get; set; }
+        public string LastName { get; set; }
     }
 
 
     // place to replace 0
-    
+
     class Program
     {
         static void Main(string[] args)

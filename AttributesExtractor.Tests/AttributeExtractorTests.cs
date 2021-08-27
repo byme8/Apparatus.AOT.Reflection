@@ -33,17 +33,7 @@ namespace AttributesExtractor.Tests
                 .ReplacePartOfDocumentAsync("Program.cs", "// place to replace 1",
                     @"var attributes = user.GetAttributes();");
 
-            var assembly = await project.CompileToRealAssembly();
-
-            var extension = assembly.GetType("AttributesExtractor.AttributesExtractor_Playground_UserExtensions");
-            var user = assembly.GetType("AttributesExtractor.Playground.User");
-            Assert.NotNull(extension);
-            Assert.NotNull(user);
-
-            var method = extension.GetMethod("GetAttributes", BindingFlags.Static | BindingFlags.Public);
-            Assert.NotNull(method);
-
-            var entries = (Entry[])method.Invoke(null, new[] { Activator.CreateInstance(user) });
+            var entries = await project.ExecuteTest();
 
             Assert.True(expectedEntries.Select(Stringify).SequenceEqual(entries!.Select(Stringify)));
         }
@@ -68,17 +58,7 @@ namespace AttributesExtractor.Tests
                     ("// place to replace 1", @"var attributes = user.GetAttributes();"),
                     ("// place to replace 2", @"[System.ComponentModel.Description(""Some first name"")]"));
 
-            var assembly = await project.CompileToRealAssembly();
-
-            var extension = assembly.GetType("AttributesExtractor.AttributesExtractor_Playground_UserExtensions");
-            var user = assembly.GetType("AttributesExtractor.Playground.User");
-            Assert.NotNull(extension);
-            Assert.NotNull(user);
-
-            var method = extension.GetMethod("GetAttributes", BindingFlags.Static | BindingFlags.Public);
-            Assert.NotNull(method);
-
-            var entries = (Entry[])method.Invoke(null, new[] { Activator.CreateInstance(user) });
+            var entries = await project.ExecuteTest();
 
             Assert.True(expectedEntries.Select(Stringify).SequenceEqual(entries!.Select(Stringify)));
         }

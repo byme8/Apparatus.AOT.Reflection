@@ -3,8 +3,10 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using AttributesExtractor.SourceGenerator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
+using Xunit;
 
 namespace AttributesExtractor.Tests.Utils
 {
@@ -18,6 +20,28 @@ namespace AttributesExtractor.Tests.Utils
             return document
                 .WithText(SourceText.From(text.ToString().Replace(textToReplace, newText)))
                 .Project;
+        }
+        
+        public static async Task<Entry[]> ExecuteTest(this Project project)
+        {
+            var assembly = await project.CompileToRealAssembly();
+
+            var extension = assembly.GetType("AttributesExtractor.AttributesExtractor_Playground_UserExtensions");
+            var user = assembly.GetType("AttributesExtractor.Playground.User");
+            Assert.NotNull(extension);
+            Assert.NotNull(user);
+
+            var method = extension.GetMethod("GetAttributes", BindingFlags.Static | BindingFlags.Public);
+            Assert.NotNull(method);
+
+            var entries = (Entry[])method.Invoke(null, new[] { Activator.CreateInstance(user) });
+            return entries;
+        }
+        
+        public static string Stringify(Entry entry)
+        {
+            return
+                $"{entry.PropertyName}{entry.Attributes.Select(o => $"{o.Type.FullName}{o.Parameters.Select(oo => oo?.ToString()).Join()}").Join()}";
         }
 
         public static async Task<Project> ReplacePartOfDocumentAsync(this Project project, string documentName,

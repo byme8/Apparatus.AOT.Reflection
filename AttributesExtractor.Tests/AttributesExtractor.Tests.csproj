@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AttributesExtractor.Playground.Core\AttributesExtractor.Playground.Core.csproj" />
     <ProjectReference Include="..\AttributesExtractor.Core\AttributesExtractor.Core.csproj" />
     <ProjectReference Include="..\AttributesExtractor.SourceGenerator\AttributesExtractor.SourceGenerator.csproj" />
   </ItemGroup>
