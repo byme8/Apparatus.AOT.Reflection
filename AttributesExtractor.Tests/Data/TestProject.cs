@@ -14,10 +14,10 @@ namespace AttributesExtractor.Tests.Data
         static TestProject()
         {
             var manager = new AnalyzerManager();
-            manager.GetProject(@"../../../../AttributesExtractor.TestProject/AttributesExtractor.TestProject.csproj");
+            manager.GetProject(@"../../../../AttributesExtractor.Playground/AttributesExtractor.Playground.csproj");
             Workspace = manager.GetWorkspace();
 
-            Project = Workspace.CurrentSolution.Projects.First(o => o.Name == "AttributesExtractor.TestProject");
+            Project = Workspace.CurrentSolution.Projects.First(o => o.Name == "AttributesExtractor.Playground");
         }
     }
 }

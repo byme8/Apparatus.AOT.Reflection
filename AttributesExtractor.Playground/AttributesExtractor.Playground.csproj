@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AttributesExtractor.Core\AttributesExtractor.Core.csproj" />
     <ProjectReference Include="..\AttributesExtractor.SourceGenerator\AttributesExtractor.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
