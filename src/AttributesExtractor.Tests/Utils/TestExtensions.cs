@@ -23,7 +23,7 @@ namespace AttributesExtractor.Tests.Utils
                 .Project;
         }
         
-        public static async Task<IPropertyInfo[]> ExecuteTest(this Project project)
+        public static async Task<IPropertyInfo[]> ExecuteTest(this Project project, User user = null)
         {
             var assembly = await project.CompileToRealAssembly();
 
@@ -33,7 +33,7 @@ namespace AttributesExtractor.Tests.Utils
             var method = extension.GetMethod("GetAttributes", BindingFlags.Static | BindingFlags.Public);
             Assert.NotNull(method);
 
-            var entries = (IPropertyInfo[])method.Invoke(null, new[] { new User() });
+            var entries = (IPropertyInfo[])method.Invoke(null, new[] { user ?? new User() });
             
             return entries;
         }

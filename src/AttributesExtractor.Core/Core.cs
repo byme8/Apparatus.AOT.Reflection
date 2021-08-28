@@ -7,8 +7,8 @@ namespace AttributesExtractor
         string Name { get; }
         AttributeData[] Attributes { get; }
 
-        (object Value, bool Error) GetValue(object instance);
-        bool SetValue(object instance, object value);
+        bool TryGetValue(object instance, out object value);
+        bool TrySetValue(object instance, object value);
     }
     
     public class AttributeData
@@ -44,17 +44,19 @@ namespace AttributesExtractor
         public AttributeData[] Attributes { get; }
 
 
-        public (object Value, bool Error) GetValue(object instance)
+        public bool TryGetValue(object instance, out object value)
         {
             if (instance is TInstance typedInstance && _getGetValue != null)
             {
-                return (_getGetValue.Invoke(typedInstance), false);
+                value = _getGetValue.Invoke(typedInstance);
+                return true;
             }
 
-            return (default, true);
+            value = null;
+            return false;
         }
 
-        public bool SetValue(object instance, object value)
+        public bool TrySetValue(object instance, object value)
         {
             if (instance is TInstance typedInstance &&
                 value is TPropertyType propertyValue && 
