@@ -40,12 +40,12 @@ namespace AttributesExtractor.SourceGenerator
                 {
                     continue;
                 }
-                
+
                 var propertyAndAttributes = typeToBake
                     .GetAllMembers()
                     .OfType<IPropertySymbol>()
                     .Where(o => o.DeclaredAccessibility.HasFlag(Accessibility.Public))
-                    .Select(o => new { o.Name, Attributes = o.GetAttributes() })
+                    .Select(o => new { o.Name, Attributes = o.GetAttributes(), o.Type })
                     .Where(o => o.Attributes.Any())
                     .ToArray();
 
@@ -56,13 +56,13 @@ namespace AttributesExtractor
 {{
     public static class {typeToBake.ToFileName()}
     {{
-        private static global::System.Lazy<global::AttributesExtractor.Entry[]> _lazy = new global::System.Lazy<global::AttributesExtractor.Entry[]>(new[]
+        private static global::System.Lazy<global::AttributesExtractor.IPropertyInfo[]> _lazy = new global::System.Lazy<global::AttributesExtractor.IPropertyInfo[]>(new[]
         {{
-{propertyAndAttributes.Select(o => $@"new global::AttributesExtractor.Entry(""{o.Name}"", new[] {{{GenerateAttributes(o.Attributes)}}}),").JoinWithNewLine()}
+{propertyAndAttributes.Select(o => $@"new global::AttributesExtractor.PropertyInfo<{typeToBake.ToGlobalName()},{o.Type.ToGlobalName()}>(""{o.Name}"", new[] {{{GenerateAttributes(o.Attributes)}}}),").JoinWithNewLine()}
         }}); 
 
 
-        public static Entry[] GetAttributes(this {typeToBake.ToGlobalName()} value)
+        public static IPropertyInfo[] GetAttributes(this {typeToBake.ToGlobalName()} value)
         {{
             return _lazy.Value;
         }}   
@@ -77,7 +77,7 @@ namespace AttributesExtractor
         private static string GenerateAttributes(ImmutableArray<AttributeData> attributes)
             => attributes
                 .Select(o =>
-                    $@"new Entry.EntryAttribute(typeof({o.AttributeClass.ToGlobalName()}){(o.ConstructorArguments.Any() ? "," : "")} {o.ConstructorArguments.Select(Convert).Join()})")
+                    $@"new AttributeData(typeof({o.AttributeClass.ToGlobalName()}){(o.ConstructorArguments.Any() ? "," : "")} {o.ConstructorArguments.Select(Convert).Join()})")
                 .Join();
 
         private static string Convert(TypedConstant typedConstant)
@@ -86,10 +86,10 @@ namespace AttributesExtractor
             {
                 return $"new[] {typedConstant.ToCSharpString()}";
             }
-            
+
             return typedConstant.ToCSharpString();
         }
-        
+
         public void Initialize(GeneratorInitializationContext context)
         {
             context.RegisterForSyntaxNotifications(() => new AttributesExtractorSyntaxNotification());

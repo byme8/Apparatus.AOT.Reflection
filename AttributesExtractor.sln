@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AttributesExtractor.Core", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AttributesExtractor.Playground.Core", "src\AttributesExtractor.Playground.Core\AttributesExtractor.Playground.Core.csproj", "{B70FE8B3-05E2-49B7-98E1-7F220B74A845}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AttributesExtractor.Benchmark", "AttributesExtractor.Benchmark\AttributesExtractor.Benchmark.csproj", "{C379A9D2-0CB7-4F06-B2C5-D52216849043}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{B70FE8B3-05E2-49B7-98E1-7F220B74A845}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B70FE8B3-05E2-49B7-98E1-7F220B74A845}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B70FE8B3-05E2-49B7-98E1-7F220B74A845}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C379A9D2-0CB7-4F06-B2C5-D52216849043}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C379A9D2-0CB7-4F06-B2C5-D52216849043}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C379A9D2-0CB7-4F06-B2C5-D52216849043}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C379A9D2-0CB7-4F06-B2C5-D52216849043}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -62,6 +68,7 @@ Global
 		{B7E5C035-0415-49E5-8A7F-54547C042367} = {E90440D4-2E8B-429E-905E-7FC89298AA1C}
 		{F2B32B58-EB8A-4675-A5DF-9515CB5DEFF2} = {08A1D4A3-2A67-4889-82FF-F36A3A7354D5}
 		{B70FE8B3-05E2-49B7-98E1-7F220B74A845} = {1D66AE8F-CF20-403F-949E-9CE29F9B24FC}
+		{C379A9D2-0CB7-4F06-B2C5-D52216849043} = {08A1D4A3-2A67-4889-82FF-F36A3A7354D5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {64E300E3-5733-491E-839F-F5468C06A379}

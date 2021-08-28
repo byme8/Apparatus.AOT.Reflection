@@ -4,9 +4,11 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using AttributesExtractor.Playground;
 using AttributesExtractor.SourceGenerator;
 using AttributesExtractor.Tests.Data;
 using AttributesExtractor.Tests.Utils;
+using Microsoft.CodeAnalysis;
 using Xunit;
 
 namespace AttributesExtractor.Tests
@@ -25,8 +27,8 @@ namespace AttributesExtractor.Tests
         {
             var expectedEntries = new[]
             {
-                new Entry("FirstName", new[] { new Entry.EntryAttribute(typeof(RequiredAttribute)) }),
-                new Entry("LastName", new[] { new Entry.EntryAttribute(typeof(RequiredAttribute)) }),
+                new PropertyInfo<User, string>("FirstName", new[] { new AttributeData(typeof(RequiredAttribute)) }),
+                new PropertyInfo<User, string>("LastName", new[] { new AttributeData(typeof(RequiredAttribute)) }),
             };
 
             var project = await TestProject.Project
@@ -35,7 +37,8 @@ namespace AttributesExtractor.Tests
 
             var entries = await project.ExecuteTest();
 
-            Assert.True(expectedEntries.Select(Stringify).SequenceEqual(entries!.Select(Stringify)));
+            Assert.True(expectedEntries.Select(TestExtensions.Stringify)
+                .SequenceEqual(entries!.Select(TestExtensions.Stringify)));
         }
 
         [Fact]
@@ -43,29 +46,24 @@ namespace AttributesExtractor.Tests
         {
             var expectedEntries = new[]
             {
-                new Entry("FirstName",
+                new PropertyInfo<User, string>("FirstName",
                     new[]
                     {
-                        new Entry.EntryAttribute(typeof(RequiredAttribute)),
-                        new Entry.EntryAttribute(typeof(DescriptionAttribute), "Some first name")
+                        new AttributeData(typeof(RequiredAttribute)),
+                        new AttributeData(typeof(DescriptionAttribute), "Some first name")
                     }),
-                new Entry("LastName", new[] { new Entry.EntryAttribute(typeof(RequiredAttribute)) }),
+                new PropertyInfo<User, string>("LastName", new[] { new AttributeData(typeof(RequiredAttribute)) }),
             };
 
             var project = await TestProject.Project
                 .ReplacePartOfDocumentAsync(
-                    "Program.cs",
-                    ("// place to replace 1", @"var attributes = user.GetAttributes();"),
-                    ("// place to replace 2", @"[System.ComponentModel.Description(""Some first name"")]"));
-
+                    (TestProject.Project.Name, "Program.cs", "// place to replace 1", @"var attributes = user.GetAttributes();"),
+                    (TestProject.Core.Name, "User.cs", "// place to replace 2", @"[System.ComponentModel.Description(""Some first name"")]"));
+            
             var entries = await project.ExecuteTest();
 
-            Assert.True(expectedEntries.Select(Stringify).SequenceEqual(entries!.Select(Stringify)));
-        }
-
-        private string Stringify(Entry entry)
-        {
-            return $"{entry.PropertyName}{entry.Attributes.Select(o => $"{o.Type.FullName}{o.Parameters.Select(oo => oo.ToString()).Join()}").Join()}";
+            Assert.True(expectedEntries.Select(TestExtensions.Stringify)
+                .SequenceEqual(entries!.Select(TestExtensions.Stringify)));
         }
     }
 }

@@ -15,18 +15,19 @@ namespace AttributesExtractor.Tests
         {
             var expectedEntries = new[]
             {
-                new Entry("FirstName", new[]
+                new PropertyInfo<User, string>("FirstName", new[]
                 {
-                    new Entry.EntryAttribute(typeof(RequiredAttribute)),
-                    new Entry.EntryAttribute(typeof(TestAttribute), 1, 0, null, null, null),
+                    new AttributeData(typeof(RequiredAttribute)),
+                    new AttributeData(typeof(TestAttribute), 1, 0, null, null, null),
                 }),
-                new Entry("LastName", new[] { new Entry.EntryAttribute(typeof(RequiredAttribute)) }),
+                new PropertyInfo<User, string>("LastName", new[] { new AttributeData(typeof(RequiredAttribute)) }),
             };
 
             var project = await TestProject.Project
-                .ReplacePartOfDocumentAsync("Program.cs",
-                    ("// place to replace 1", @"var attributes = user.GetAttributes();"),
-                    ("// place to replace 2", @"[Test(@int: 1)]"));
+                .ReplacePartOfDocumentAsync(
+                    (TestProject.Project.Name, "Program.cs", "// place to replace 1",
+                        @"var attributes = user.GetAttributes();"),
+                    (TestProject.Core.Name, "User.cs", "// place to replace 2", @"[Test(@int: 1)]"));
 
             var entries = await project.ExecuteTest();
 
@@ -39,18 +40,19 @@ namespace AttributesExtractor.Tests
         {
             var expectedEntries = new[]
             {
-                new Entry("FirstName", new[]
+                new PropertyInfo<User, string>("FirstName", new[]
                 {
-                    new Entry.EntryAttribute(typeof(RequiredAttribute)),
-                    new Entry.EntryAttribute(typeof(TestAttribute), 0, 0, "test", null, null),
+                    new AttributeData(typeof(RequiredAttribute)),
+                    new AttributeData(typeof(TestAttribute), 0, 0, "test", null, null),
                 }),
-                new Entry("LastName", new[] { new Entry.EntryAttribute(typeof(RequiredAttribute)) }),
+                new PropertyInfo<User, string>("LastName", new[] { new AttributeData(typeof(RequiredAttribute)) }),
             };
 
             var project = await TestProject.Project
-                .ReplacePartOfDocumentAsync("Program.cs",
-                    ("// place to replace 1", @"var attributes = user.GetAttributes();"),
-                    ("// place to replace 2", @"[Test(text: ""test"")]"));
+                .ReplacePartOfDocumentAsync(
+                    (TestProject.Project.Name, "Program.cs", "// place to replace 1",
+                        @"var attributes = user.GetAttributes();"),
+                    (TestProject.Core.Name, "User.cs", "// place to replace 2", @"[Test(text: ""test"")]"));
 
             var entries = await project.ExecuteTest();
 
@@ -63,42 +65,45 @@ namespace AttributesExtractor.Tests
         {
             var expectedEntries = new[]
             {
-                new Entry("FirstName", new[]
+                new PropertyInfo<User, string>("FirstName", new[]
                 {
-                    new Entry.EntryAttribute(typeof(RequiredAttribute)),
-                    new Entry.EntryAttribute(typeof(TestAttribute), 0, 0, null, new[] { "test", "test1" }, null),
+                    new AttributeData(typeof(RequiredAttribute)),
+                    new AttributeData(typeof(TestAttribute), 0, 0, null, new[] { "test", "test1" }, null),
                 }),
-                new Entry("LastName", new[] { new Entry.EntryAttribute(typeof(RequiredAttribute)) }),
+                new PropertyInfo<User, string>("LastName", new[] { new AttributeData(typeof(RequiredAttribute)) }),
             };
 
             var project = await TestProject.Project
-                .ReplacePartOfDocumentAsync("Program.cs",
-                    ("// place to replace 1", @"var attributes = user.GetAttributes();"),
-                    ("// place to replace 2", @"[Test(textArray: new[] { ""test"", ""test1"" })]"));
+                .ReplacePartOfDocumentAsync(
+                    (TestProject.Project.Name, "Program.cs", "// place to replace 1",
+                        @"var attributes = user.GetAttributes();"),
+                    (TestProject.Core.Name, "User.cs", "// place to replace 2",
+                        @"[Test(textArray: new[] { ""test"", ""test1"" })]"));
 
             var entries = await project.ExecuteTest();
 
             Assert.True(expectedEntries.Select(TestExtensions.Stringify)
                 .SequenceEqual(entries!.Select(TestExtensions.Stringify)));
         }
-        
+
         [Fact]
         public async Task TypeWorks()
         {
             var expectedEntries = new[]
             {
-                new Entry("FirstName", new[]
+                new PropertyInfo<User, string>("FirstName", new[]
                 {
-                    new Entry.EntryAttribute(typeof(RequiredAttribute)),
-                    new Entry.EntryAttribute(typeof(TestAttribute), 0, 0, null, null, typeof(int)),
+                    new AttributeData(typeof(RequiredAttribute)),
+                    new AttributeData(typeof(TestAttribute), 0, 0, null, null, typeof(int)),
                 }),
-                new Entry("LastName", new[] { new Entry.EntryAttribute(typeof(RequiredAttribute)) }),
+                new PropertyInfo<User, string>("LastName", new[] { new AttributeData(typeof(RequiredAttribute)) }),
             };
 
             var project = await TestProject.Project
-                .ReplacePartOfDocumentAsync("Program.cs",
-                    ("// place to replace 1", @"var attributes = user.GetAttributes();"),
-                    ("// place to replace 2", @"[Test(type: typeof(int))]"));
+                .ReplacePartOfDocumentAsync(
+                    (TestProject.Project.Name, "Program.cs", "// place to replace 1",
+                        @"var attributes = user.GetAttributes();"),
+                    (TestProject.Core.Name, "User.cs", "// place to replace 2", @"[Test(type: typeof(int))]"));
 
             var entries = await project.ExecuteTest();
 

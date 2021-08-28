@@ -5,3 +5,5 @@ bin
 obj
 
 *.sln.DotSettings.user
+
+/AttributesExtractor.Benchmark/BenchmarkDotNet.Artifacts/

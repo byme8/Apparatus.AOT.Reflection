@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using AttributesExtractor.Playground;
 using AttributesExtractor.SourceGenerator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
@@ -22,26 +23,25 @@ namespace AttributesExtractor.Tests.Utils
                 .Project;
         }
         
-        public static async Task<Entry[]> ExecuteTest(this Project project)
+        public static async Task<IPropertyInfo[]> ExecuteTest(this Project project)
         {
             var assembly = await project.CompileToRealAssembly();
 
             var extension = assembly.GetType("AttributesExtractor.AttributesExtractor_Playground_UserExtensions");
-            var user = assembly.GetType("AttributesExtractor.Playground.User");
             Assert.NotNull(extension);
-            Assert.NotNull(user);
 
             var method = extension.GetMethod("GetAttributes", BindingFlags.Static | BindingFlags.Public);
             Assert.NotNull(method);
 
-            var entries = (Entry[])method.Invoke(null, new[] { Activator.CreateInstance(user) });
+            var entries = (IPropertyInfo[])method.Invoke(null, new[] { new User() });
+            
             return entries;
         }
         
-        public static string Stringify(Entry entry)
+        public static string Stringify(IPropertyInfo propertyInfo)
         {
             return
-                $"{entry.PropertyName}{entry.Attributes.Select(o => $"{o.Type.FullName}{o.Parameters.Select(oo => oo?.ToString()).Join()}").Join()}";
+                $"{propertyInfo.Name}{propertyInfo.Attributes.Select(o => $"{o.Type.FullName}{o.Parameters.Select(oo => oo?.ToString()).Join()}").Join()}";
         }
 
         public static async Task<Project> ReplacePartOfDocumentAsync(this Project project, string documentName,
@@ -53,6 +53,22 @@ namespace AttributesExtractor.Tests.Utils
             }
 
             return project;
+        }
+        
+        public static async Task<Project> ReplacePartOfDocumentAsync(this Project project,
+            params (string ProjectName, string DocumentName, string TextToReplace, string NewText)[] places)
+        {
+            var solution = project.Solution;
+            foreach (var place in places)
+            {
+                var newProject = await solution.Projects
+                    .First(o => o.Name == place.ProjectName)
+                    .ReplacePartOfDocumentAsync(place.DocumentName, (place.TextToReplace, place.NewText));
+
+                solution = newProject.Solution;
+            }
+            
+            return solution.Projects.First(o => o.Name == project.Name);
         }
 
         public static async Task<Assembly> CompileToRealAssembly(this Project project)
