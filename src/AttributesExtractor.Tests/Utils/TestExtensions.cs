@@ -30,7 +30,7 @@ namespace AttributesExtractor.Tests.Utils
             var extension = assembly.GetType("AttributesExtractor.AttributesExtractor_Playground_UserExtensions");
             Assert.NotNull(extension);
 
-            var method = extension.GetMethod("GetAttributes", BindingFlags.Static | BindingFlags.Public);
+            var method = extension.GetMethod("GetProperties", BindingFlags.Static | BindingFlags.Public);
             Assert.NotNull(method);
 
             var entries = (IPropertyInfo[])method.Invoke(null, new[] { user ?? new User() });

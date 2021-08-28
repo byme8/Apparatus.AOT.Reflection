@@ -33,7 +33,7 @@ namespace AttributesExtractor.Tests
 
             var project = await TestProject.Project
                 .ReplacePartOfDocumentAsync("Program.cs", "// place to replace 1",
-                    @"var attributes = user.GetAttributes();");
+                    @"var attributes = user.GetProperties();");
 
             var entries = await project.ExecuteTest();
 
@@ -57,7 +57,7 @@ namespace AttributesExtractor.Tests
 
             var project = await TestProject.Project
                 .ReplacePartOfDocumentAsync(
-                    (TestProject.Project.Name, "Program.cs", "// place to replace 1", @"var attributes = user.GetAttributes();"),
+                    (TestProject.Project.Name, "Program.cs", "// place to replace 1", @"var attributes = user.GetProperties();"),
                     (TestProject.Core.Name, "User.cs", "// place to replace 2", @"[System.ComponentModel.Description(""Some first name"")]"));
             
             var entries = await project.ExecuteTest();
@@ -70,7 +70,7 @@ namespace AttributesExtractor.Tests
         public async Task GetterAndSettersWorks()
         {
             var project = await TestProject.Project
-                .ReplacePartOfDocumentAsync("Program.cs", "// place to replace 1", @"var attributes = user.GetAttributes();");
+                .ReplacePartOfDocumentAsync("Program.cs", "// place to replace 1", @"var attributes = user.GetProperties();");
 
             var user = new User
             {
@@ -97,7 +97,7 @@ namespace AttributesExtractor.Tests
         public async Task ExecuteGetterOnWrongType()
         {
             var project = await TestProject.Project
-                .ReplacePartOfDocumentAsync("Program.cs", "// place to replace 1", @"var attributes = user.GetAttributes();");
+                .ReplacePartOfDocumentAsync("Program.cs", "// place to replace 1", @"var attributes = user.GetProperties();");
 
             var user = new User
             {
@@ -117,7 +117,7 @@ namespace AttributesExtractor.Tests
         public async Task ExecuteSetterOnWrongType()
         {
             var project = await TestProject.Project
-                .ReplacePartOfDocumentAsync("Program.cs", "// place to replace 1", @"var attributes = user.GetAttributes();");
+                .ReplacePartOfDocumentAsync("Program.cs", "// place to replace 1", @"var attributes = user.GetProperties();");
 
             var user = new User
             {

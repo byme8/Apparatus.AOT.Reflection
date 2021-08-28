@@ -20,7 +20,7 @@ namespace AttributesExtractor.SourceGenerator
 
             var initialType =
                 context.Compilation.GetTypeByMetadataName("AttributesExtractor.AttributesExtractorExtensions");
-            var initialMethod = initialType.GetMembers().OfType<IMethodSymbol>().First(o => o.Name == "GetAttributes");
+            var initialMethod = initialType.GetMembers().OfType<IMethodSymbol>().First(o => o.Name == "GetProperties");
             var processed = new HashSet<string>();
             foreach (var memberAccess in receiver.MemberAccess)
             {
@@ -69,7 +69,7 @@ $@"            new global::AttributesExtractor.PropertyInfo<{typeToBake.ToGlobal
         }}); 
 
 
-        public static IPropertyInfo[] GetAttributes(this {typeToBake.ToGlobalName()} value)
+        public static IPropertyInfo[] GetProperties(this {typeToBake.ToGlobalName()} value)
         {{
             return _lazy.Value;
         }}   
@@ -137,7 +137,7 @@ $@"            new global::AttributesExtractor.PropertyInfo<{typeToBake.ToGlobal
         {
             if (syntaxNode is InvocationExpressionSyntax invocation &&
                 invocation.Expression is MemberAccessExpressionSyntax memberAccess &&
-                memberAccess.Name.ToString() == "GetAttributes")
+                memberAccess.Name.ToString() == "GetProperties")
             {
                 MemberAccess.Add(memberAccess);
             }

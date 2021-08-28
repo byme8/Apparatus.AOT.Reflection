@@ -17,7 +17,7 @@ namespace AttributesExtractor.Playground
         static void DontCall()
         {
             var user = new User();
-            var attributes = user.GetAttributes();
+            var attributes = user.GetProperties();
         }
     }
 }

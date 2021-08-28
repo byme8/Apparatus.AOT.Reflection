@@ -72,7 +72,7 @@ namespace AttributesExtractor
 
     public static class AttributesExtractorExtensions
     {
-        public static IPropertyInfo[] GetAttributes<TValue>(this TValue value)
+        public static IPropertyInfo[] GetProperties<TValue>(this TValue value)
         {
             return null;
         }   

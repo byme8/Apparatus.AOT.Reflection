@@ -39,7 +39,7 @@ namespace AttributesExtractor.Benchmark
         [Benchmark]
         public bool AttributeExtractor()
         {
-            var entries = _user.GetAttributes();
+            var entries = _user.GetProperties();
             var firstName = entries.First(o => o.Name == nameof(User.FirstName));
 
             var result = firstName.Attributes.Any(o => o.Type == typeof(RequiredAttribute));
