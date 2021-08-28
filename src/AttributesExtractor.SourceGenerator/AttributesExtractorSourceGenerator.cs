@@ -18,9 +18,14 @@ namespace AttributesExtractor.SourceGenerator
                 return;
             }
 
-            var initialType =
+            var extensionType =
                 context.Compilation.GetTypeByMetadataName("AttributesExtractor.AttributesExtractorExtensions");
-            var initialMethod = initialType.GetMembers().OfType<IMethodSymbol>().First(o => o.Name == "GetProperties");
+            var extensionMethod = extensionType.GetMembers().OfType<IMethodSymbol>().First(o => o.Name == "GetProperties");
+            var genericHelperType =
+                context.Compilation.GetTypeByMetadataName("AttributesExtractor.GenericHelper");
+            var bootstrapMethod = genericHelperType.GetMembers().OfType<IMethodSymbol>().First(o => o.Name == "Bootstrap");
+            
+            
             var processed = new HashSet<string>();
             foreach (var memberAccess in receiver.MemberAccess)
             {
@@ -31,12 +36,18 @@ namespace AttributesExtractor.SourceGenerator
                     continue;
                 }
 
-                if (!SymbolEqualityComparer.Default.Equals(initialMethod, methodSymbol.ReducedFrom))
+                if (!SymbolEqualityComparer.Default.Equals(extensionMethod, methodSymbol.ReducedFrom) &&
+                    !SymbolEqualityComparer.Default.Equals(bootstrapMethod, methodSymbol.ConstructedFrom) )
                 {
                     continue;
                 }
 
                 var typeToBake = methodSymbol.TypeArguments.First();
+                if (typeToBake is ITypeParameterSymbol)
+                {
+                    continue;
+                }
+                
                 if (processed.Contains(typeToBake.ToGlobalName()))
                 {
                     continue;
@@ -55,6 +66,12 @@ namespace AttributesExtractor
 {{
     public static class {typeToBake.ToFileName()}
     {{
+        [global::System.Runtime.CompilerServices.ModuleInitializer]
+        public static void Bootstrap()
+        {{
+            MetadataStore<{typeToBake.ToGlobalName()}>.Data = _lazy;
+        }}
+
         private static global::System.Lazy<global::AttributesExtractor.IPropertyInfo[]> _lazy = new global::System.Lazy<global::AttributesExtractor.IPropertyInfo[]>(new[]
         {{
 {propertyAndAttributes.Select(o => 
@@ -137,7 +154,8 @@ $@"            new global::AttributesExtractor.PropertyInfo<{typeToBake.ToGlobal
         {
             if (syntaxNode is InvocationExpressionSyntax invocation &&
                 invocation.Expression is MemberAccessExpressionSyntax memberAccess &&
-                memberAccess.Name.ToString() == "GetProperties")
+                (memberAccess.Name.ToString() == "GetProperties" || 
+                 memberAccess.Name is GenericNameSyntax genericNameSyntax && genericNameSyntax.Identifier.ToString() == "Bootstrap"))
             {
                 MemberAccess.Add(memberAccess);
             }

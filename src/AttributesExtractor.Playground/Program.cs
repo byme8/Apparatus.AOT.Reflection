@@ -1,12 +1,9 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-
-namespace AttributesExtractor.Playground
+﻿namespace AttributesExtractor.Playground
 {
 
     // place to replace 0
 
-    class Program
+    static class Program
     {
         static void Main(string[] args)
         {
@@ -19,5 +16,15 @@ namespace AttributesExtractor.Playground
             var user = new User();
             var attributes = user.GetProperties();
         }
+
+        public static IPropertyInfo[] GetUserInfo()
+        {
+            return GetInfo(new User());
+        }
+        
+        public static IPropertyInfo[] GetInfo<T>(T value)
+        {
+            return value.GetProperties();
+        } 
     }
 }

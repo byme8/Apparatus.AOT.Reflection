@@ -69,12 +69,4 @@ namespace AttributesExtractor
             return false;
         }
     }
-
-    public static class AttributesExtractorExtensions
-    {
-        public static IPropertyInfo[] GetProperties<TValue>(this TValue value)
-        {
-            return null;
-        }   
-    } 
 }

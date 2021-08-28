@@ -132,5 +132,53 @@ namespace AttributesExtractor.Tests
             
             Assert.False(success);
         }
+        
+        [Fact]
+        public async Task WorksWithGenerics()
+        {
+            var assembly = await TestProject.Project.CompileToRealAssembly();
+            var methodInfo = assembly
+                .GetType("AttributesExtractor.Playground.Program")!
+                .GetMethod("GetUserInfo", BindingFlags.Static | BindingFlags.Public)!;
+            
+            var properties = methodInfo
+                .Invoke(null, null) as IPropertyInfo[];
+            
+            Assert.NotNull(properties);
+        }
+        
+        [Fact]
+        public async Task ExceptionFiredWhenTypeIsNotBootstrapped()
+        {
+            
+            var project = await TestProject.Project
+                .ReplacePartOfDocumentAsync("Program.cs", "var attributes = user.GetProperties();", "");
+            var assembly = await project.CompileToRealAssembly();
+            
+            var methodInfo = assembly
+                .GetType("AttributesExtractor.Playground.Program")!
+                .GetMethod("GetUserInfo", BindingFlags.Static | BindingFlags.Public)!;
+            
+            MetadataStore<User>.Data = null;
+            Assert.Throws<TargetInvocationException>(() => methodInfo.Invoke(null, null) as IPropertyInfo[]);
+        }
+        
+        [Fact]
+        public async Task BootstrapMethodWorks()
+        {
+            var project = await TestProject.Project
+                .ReplacePartOfDocumentAsync("Program.cs", "var attributes = user.GetProperties();", "GenericHelper.Bootstrap<User>();");
+
+            var assembly = await project.CompileToRealAssembly();
+            
+            var methodInfo = assembly
+                .GetType("AttributesExtractor.Playground.Program")!
+                .GetMethod("GetUserInfo", BindingFlags.Static | BindingFlags.Public)!;
+            
+            var properties = methodInfo
+                .Invoke(null, null) as IPropertyInfo[];
+            
+            Assert.NotNull(properties);
+        }
     }
 }
