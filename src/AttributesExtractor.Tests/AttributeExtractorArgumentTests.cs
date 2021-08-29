@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,7 +19,11 @@ namespace AttributesExtractor.Tests
                 new PropertyInfo<User, string>("FirstName", new[]
                 {
                     new AttributeData(typeof(RequiredAttribute)),
-                    new AttributeData(typeof(TestAttribute), 1, 0, null, null, null),
+                    new AttributeData(typeof(TestAttribute),
+                        new Dictionary<string, object>
+                        {
+                            { "int", 1 }, { "float", 0 }, { "text", null }, { "textArray", null }, { "type", null }
+                        }),
                 }),
                 new PropertyInfo<User, string>("LastName", new[] { new AttributeData(typeof(RequiredAttribute)) }),
             };
@@ -43,7 +48,11 @@ namespace AttributesExtractor.Tests
                 new PropertyInfo<User, string>("FirstName", new[]
                 {
                     new AttributeData(typeof(RequiredAttribute)),
-                    new AttributeData(typeof(TestAttribute), 0, 0, "test", null, null),
+                    new AttributeData(typeof(TestAttribute),
+                        new Dictionary<string, object>
+                        {
+                            { "text", "test" }
+                        }),
                 }),
                 new PropertyInfo<User, string>("LastName", new[] { new AttributeData(typeof(RequiredAttribute)) }),
             };
@@ -68,7 +77,12 @@ namespace AttributesExtractor.Tests
                 new PropertyInfo<User, string>("FirstName", new[]
                 {
                     new AttributeData(typeof(RequiredAttribute)),
-                    new AttributeData(typeof(TestAttribute), 0, 0, null, new[] { "test", "test1" }, null),
+                    new AttributeData(typeof(TestAttribute),
+                        new Dictionary<string, object>
+                        {
+                            { "int", 0 }, { "float", 0 }, { "text", null },
+                            { "textArray", new[] { "test", "test1" } }, { "type", null }
+                        }),
                 }),
                 new PropertyInfo<User, string>("LastName", new[] { new AttributeData(typeof(RequiredAttribute)) }),
             };
@@ -94,7 +108,12 @@ namespace AttributesExtractor.Tests
                 new PropertyInfo<User, string>("FirstName", new[]
                 {
                     new AttributeData(typeof(RequiredAttribute)),
-                    new AttributeData(typeof(TestAttribute), 0, 0, null, null, typeof(int)),
+                    new AttributeData(typeof(TestAttribute),
+                        new Dictionary<string, object>
+                        {
+                            { "int", 0 }, { "float", 0 }, { "text", null }, { "textArray", null },
+                            { "type", typeof(int) }
+                        })
                 }),
                 new PropertyInfo<User, string>("LastName", new[] { new AttributeData(typeof(RequiredAttribute)) }),
             };

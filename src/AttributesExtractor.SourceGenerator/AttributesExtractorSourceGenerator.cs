@@ -127,17 +127,23 @@ $@"            new global::AttributesExtractor.PropertyInfo<{typeToBake.ToGlobal
         private static string GenerateAttributes(ImmutableArray<AttributeData> attributes)
             => attributes
                 .Select(o =>
-                    $@"new AttributeData(typeof({o.AttributeClass.ToGlobalName()}){(o.ConstructorArguments.Any() ? "," : "")} {o.ConstructorArguments.Select(Convert).Join()}),")
+                {
+                    var parameters = o.AttributeConstructor.Parameters
+                        .Select((parameter, i) => new KeyValuePair<string, TypedConstant>(parameter.Name, o.ConstructorArguments[i]))
+                        .Select(Convert);
+                    
+                    return $@"new AttributeData(typeof({o.AttributeClass.ToGlobalName()}), new global::System.Collections.Generic.Dictionary<string, object>{{ {parameters.Join()} }}),";
+                })
                 .JoinWithNewLine();
 
-        private static string Convert(TypedConstant typedConstant)
+        private static string Convert(KeyValuePair<string, TypedConstant> pair)
         {
-            if (typedConstant.Kind == TypedConstantKind.Array && !typedConstant.IsNull)
+            if (pair.Value.Kind == TypedConstantKind.Array && !pair.Value.IsNull)
             {
-                return $"new[] {typedConstant.ToCSharpString()}";
+                return $@"{{""{pair.Key}"", new[] {pair.Value.ToCSharpString()}}}";
             }
 
-            return typedConstant.ToCSharpString();
+            return $@"{{""{pair.Key}"", {pair.Value.ToCSharpString()}}}";
         }
 
         public void Initialize(GeneratorInitializationContext context)

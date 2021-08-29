@@ -1,14 +1,12 @@
-using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using AttributesExtractor.Playground;
-using AttributesExtractor.SourceGenerator;
 using AttributesExtractor.Tests.Data;
 using AttributesExtractor.Tests.Utils;
-using Microsoft.CodeAnalysis;
 using Xunit;
 
 namespace AttributesExtractor.Tests
@@ -50,7 +48,7 @@ namespace AttributesExtractor.Tests
                     new[]
                     {
                         new AttributeData(typeof(RequiredAttribute)),
-                        new AttributeData(typeof(DescriptionAttribute), "Some first name")
+                        new AttributeData(typeof(DescriptionAttribute), new Dictionary<string, object> {{"description", "Some first name"}})
                     }),
                 new PropertyInfo<User, string>("LastName", new[] { new AttributeData(typeof(RequiredAttribute)) }),
             };

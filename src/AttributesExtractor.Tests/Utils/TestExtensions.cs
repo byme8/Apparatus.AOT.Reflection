@@ -41,7 +41,7 @@ namespace AttributesExtractor.Tests.Utils
         public static string Stringify(IPropertyInfo propertyInfo)
         {
             return
-                $"{propertyInfo.Name}{propertyInfo.Attributes.Select(o => $"{o.Type.FullName}{o.Parameters.Select(oo => oo?.ToString()).Join()}").Join()}";
+                $"{propertyInfo.Name}{propertyInfo.Attributes.Select(o => $"{o.Type.FullName}{o.Parameters.Select(oo => oo.Key + oo.Value).Join()}").Join()}";
         }
 
         public static async Task<Project> ReplacePartOfDocumentAsync(this Project project, string documentName,

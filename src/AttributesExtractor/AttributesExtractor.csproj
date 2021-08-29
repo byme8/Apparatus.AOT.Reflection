@@ -33,7 +33,7 @@
   <Target Name="_AddAnalyzersToOutput">
     <ItemGroup>
       <TfmSpecificPackageFile Include="$(OutputPath)\AttributesExtractor.SourceGenerator.dll" PackagePath="analyzers/dotnet/cs" />
-      <TfmSpecificPackageFile Include="$(OutputPath)\AttributesExtractor.Core.dll" PackagePath="analyzers/dotnet/cs" />
+      <TfmSpecificPackageFile Include="$(OutputPath)\AttributesExtractor.Core.dll" PackagePath="lib/netstandard2.0" />
     </ItemGroup>
   </Target>
 
