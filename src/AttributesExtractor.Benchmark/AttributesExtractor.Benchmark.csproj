@@ -11,7 +11,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\src\AttributesExtractor.Playground\AttributesExtractor.Playground.csproj" />
+      <ProjectReference Include="..\AttributesExtractor.Playground\AttributesExtractor.Playground.csproj" />
     </ItemGroup>
 
 </Project>
