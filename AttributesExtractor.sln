@@ -21,7 +21,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AttributesExtractor.Core", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AttributesExtractor.Playground.Core", "src\AttributesExtractor.Playground.Core\AttributesExtractor.Playground.Core.csproj", "{B70FE8B3-05E2-49B7-98E1-7F220B74A845}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AttributesExtractor.Benchmark", "AttributesExtractor.Benchmark\AttributesExtractor.Benchmark.csproj", "{C379A9D2-0CB7-4F06-B2C5-D52216849043}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AttributesExtractor.Benchmark", "src\AttributesExtractor.Benchmark\AttributesExtractor.Benchmark.csproj", "{C379A9D2-0CB7-4F06-B2C5-D52216849043}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
