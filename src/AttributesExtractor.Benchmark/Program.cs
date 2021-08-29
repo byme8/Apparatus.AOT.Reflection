@@ -31,7 +31,7 @@ namespace AttributesExtractor.Benchmark
             };
         }
 
-        [Benchmark]
+        // [Benchmark]
         public string Direct()
         {
             return _user.FirstName;
@@ -43,7 +43,16 @@ namespace AttributesExtractor.Benchmark
             var type = _user.GetType();
             var property = type.GetProperty(nameof(User.FirstName));
 
-            var required = property.GetCustomAttributes().Any(o => o.GetType() == typeof(RequiredAttribute));
+            var required = false;
+            foreach (var o in property.GetCustomAttributes())
+            {
+                if (o.GetType() == typeof(RequiredAttribute))
+                {
+                    required = true;
+                    break;
+                }
+            }
+
             if (required)
             {
                 return (string)property.GetMethod?.Invoke(_user, null);
@@ -56,9 +65,18 @@ namespace AttributesExtractor.Benchmark
         public string AttributeExtractor()
         {
             var entries = _user.GetProperties();
-            var firstName = entries.First(o => o.Name == nameof(User.FirstName));
+            var firstName = entries[nameof(User.FirstName)];
 
-            var required = firstName.Attributes.Any(o => o.Type == typeof(RequiredAttribute));
+            var required = false;
+            foreach (var o in firstName.Attributes)
+            {
+                if (o.Type == typeof(RequiredAttribute))
+                {
+                    required = true;
+                    break;
+                }
+            }
+
             if (required)
             {
                 if (firstName.TryGetValue(_user, out var value))

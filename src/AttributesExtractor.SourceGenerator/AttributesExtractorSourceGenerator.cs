@@ -61,6 +61,7 @@ namespace AttributesExtractor.SourceGenerator
 
                 var source = $@"
 using System;
+using System.Linq;
 
 namespace AttributesExtractor
 {{
@@ -72,21 +73,22 @@ namespace AttributesExtractor
             MetadataStore<{typeToBake.ToGlobalName()}>.Data = _lazy;
         }}
 
-        private static global::System.Lazy<global::AttributesExtractor.IPropertyInfo[]> _lazy = new global::System.Lazy<global::AttributesExtractor.IPropertyInfo[]>(new[]
+        private static global::System.Lazy<global::System.Collections.Generic.IReadOnlyDictionary<string, IPropertyInfo>> _lazy = new global::System.Lazy<global::System.Collections.Generic.IReadOnlyDictionary<string, IPropertyInfo>>(new global::System.Collections.Generic.Dictionary<string, IPropertyInfo>
         {{
 {propertyAndAttributes.Select(o => 
-$@"            new global::AttributesExtractor.PropertyInfo<{typeToBake.ToGlobalName()},{o.Type.ToGlobalName()}>(
+$@"            {{ ""{o.Name}"", new global::AttributesExtractor.PropertyInfo<{typeToBake.ToGlobalName()},{o.Type.ToGlobalName()}>(
                         ""{o.Name}"", 
                         new[] 
                         {{
                             {GenerateAttributes(o.GetAttributes())}
                         }}, 
-                        {GenerateGetterAndSetter(o)}),")
+                        {GenerateGetterAndSetter(o)})
+                }},")
                         .JoinWithNewLine()}
         }}); 
 
 
-        public static IPropertyInfo[] GetProperties(this {typeToBake.ToGlobalName()} value)
+        public static global::System.Collections.Generic.IReadOnlyDictionary<string, IPropertyInfo> GetProperties(this {typeToBake.ToGlobalName()} value)
         {{
             return _lazy.Value;
         }}   

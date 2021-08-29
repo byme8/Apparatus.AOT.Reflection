@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -33,9 +34,9 @@ namespace AttributesExtractor.Tests.Utils
             var method = extension.GetMethod("GetProperties", BindingFlags.Static | BindingFlags.Public);
             Assert.NotNull(method);
 
-            var entries = (IPropertyInfo[])method.Invoke(null, new[] { user ?? new User() });
+            var entries = (IReadOnlyDictionary<string, IPropertyInfo>)method.Invoke(null, new[] { user ?? new User() });
             
-            return entries;
+            return entries.Values.ToArray();
         }
         
         public static string Stringify(IPropertyInfo propertyInfo)

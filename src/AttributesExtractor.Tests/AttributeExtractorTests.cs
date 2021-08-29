@@ -140,7 +140,7 @@ namespace AttributesExtractor.Tests
                 .GetMethod("GetUserInfo", BindingFlags.Static | BindingFlags.Public)!;
             
             var properties = methodInfo
-                .Invoke(null, null) as IPropertyInfo[];
+                .Invoke(null, null) as  IReadOnlyDictionary<string, IPropertyInfo>;
             
             Assert.NotNull(properties);
         }
@@ -158,7 +158,7 @@ namespace AttributesExtractor.Tests
                 .GetMethod("GetUserInfo", BindingFlags.Static | BindingFlags.Public)!;
             
             MetadataStore<User>.Data = null;
-            Assert.Throws<TargetInvocationException>(() => methodInfo.Invoke(null, null) as IPropertyInfo[]);
+            Assert.Throws<TargetInvocationException>(() => methodInfo.Invoke(null, null));
         }
         
         [Fact]
@@ -174,7 +174,7 @@ namespace AttributesExtractor.Tests
                 .GetMethod("GetUserInfo", BindingFlags.Static | BindingFlags.Public)!;
             
             var properties = methodInfo
-                .Invoke(null, null) as IPropertyInfo[];
+                .Invoke(null, null) as IReadOnlyDictionary<string, IPropertyInfo>;
             
             Assert.NotNull(properties);
         }

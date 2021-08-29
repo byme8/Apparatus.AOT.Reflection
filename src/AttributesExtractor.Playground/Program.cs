@@ -1,4 +1,7 @@
-﻿namespace AttributesExtractor.Playground
+﻿using System.Collections.Generic;
+using System.Linq;
+
+namespace AttributesExtractor.Playground
 {
 
     // place to replace 0
@@ -17,12 +20,12 @@
             var attributes = user.GetProperties();
         }
 
-        public static IPropertyInfo[] GetUserInfo()
+        public static global::System.Collections.Generic.IReadOnlyDictionary<string, IPropertyInfo> GetUserInfo()
         {
             return GetInfo(new User());
         }
         
-        public static IPropertyInfo[] GetInfo<T>(T value)
+        public static global::System.Collections.Generic.IReadOnlyDictionary<string, IPropertyInfo> GetInfo<T>(T value)
         {
             return value.GetProperties();
         } 
