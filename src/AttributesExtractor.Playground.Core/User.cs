@@ -9,6 +9,12 @@ namespace AttributesExtractor.Playground
         public string FirstName { get; set; }
 
         [Required]
-        public string LastName { get; set; }
+        public virtual string LastName { get; set; }
+    }
+
+    public class Admin : User
+    {
+        public new string FirstName { get; set; }
+        public override string LastName { get; set; }
     }
 }

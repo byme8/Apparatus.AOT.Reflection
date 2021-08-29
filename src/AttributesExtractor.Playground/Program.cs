@@ -1,9 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-
-namespace AttributesExtractor.Playground
+﻿namespace AttributesExtractor.Playground
 {
-
     // place to replace 0
 
     static class Program
@@ -24,10 +20,10 @@ namespace AttributesExtractor.Playground
         {
             return GetInfo(new User());
         }
-        
+
         public static global::System.Collections.Generic.IReadOnlyDictionary<string, IPropertyInfo> GetInfo<T>(T value)
         {
             return value.GetProperties();
-        } 
+        }
     }
 }

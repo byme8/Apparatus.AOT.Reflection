@@ -178,5 +178,23 @@ namespace AttributesExtractor.Tests
             
             Assert.NotNull(properties);
         }
+        
+        [Fact]
+        public async Task PropertiesWithOverrideAndNewHandledProperly()
+        {
+            var project = await TestProject.Project
+                .ReplacePartOfDocumentAsync("Program.cs", "// place to replace 1", "var attributes = new Admin().GetProperties();");
+
+            var assembly = await project.CompileToRealAssembly();
+            
+            var methodInfo = assembly
+                .GetType("AttributesExtractor.Playground.Program")!
+                .GetMethod("GetUserInfo", BindingFlags.Static | BindingFlags.Public)!;
+            
+            var properties = methodInfo
+                .Invoke(null, null) as IReadOnlyDictionary<string, IPropertyInfo>;
+            
+            Assert.NotNull(properties);
+        }
     }
 }

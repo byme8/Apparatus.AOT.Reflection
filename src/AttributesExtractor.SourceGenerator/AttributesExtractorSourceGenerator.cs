@@ -24,11 +24,15 @@ namespace AttributesExtractor.SourceGenerator
             var genericHelperType =
                 context.Compilation.GetTypeByMetadataName("AttributesExtractor.GenericHelper");
             var bootstrapMethod = genericHelperType.GetMembers().OfType<IMethodSymbol>().First(o => o.Name == "Bootstrap");
-            
-            
+
             var processed = new HashSet<string>();
             foreach (var memberAccess in receiver.MemberAccess)
             {
+                if (context.CancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+                
                 var semanticModel = context.Compilation.GetSemanticModel(memberAccess.SyntaxTree);
                 var symbol = ModelExtensions.GetSymbolInfo(semanticModel, memberAccess.Name);
                 if (!(symbol.Symbol is IMethodSymbol methodSymbol))
@@ -53,10 +57,25 @@ namespace AttributesExtractor.SourceGenerator
                     continue;
                 }
 
+                if (context.CancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+                
                 var propertyAndAttributes = typeToBake
                     .GetAllMembers()
                     .OfType<IPropertySymbol>()
                     .Where(o => o.DeclaredAccessibility.HasFlag(Accessibility.Public))
+                    .GroupBy(o => o.Name)
+                    .Select(o =>
+                    {
+                        if (o.Count() > 1)
+                        {
+                            return o.Last();
+                        }
+
+                        return o.First();
+                    })
                     .ToArray();
 
                 var source = $@"
@@ -78,7 +97,7 @@ namespace AttributesExtractor
 {propertyAndAttributes.Select(o => 
 $@"            {{ ""{o.Name}"", new global::AttributesExtractor.PropertyInfo<{typeToBake.ToGlobalName()},{o.Type.ToGlobalName()}>(
                         ""{o.Name}"", 
-                        new[] 
+                        new global::AttributesExtractor.AttributeData[] 
                         {{
                             {GenerateAttributes(o.GetAttributes())}
                         }}, 
@@ -95,6 +114,11 @@ $@"            {{ ""{o.Name}"", new global::AttributesExtractor.PropertyInfo<{ty
     }}
 }}
 ";
+                if (context.CancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+                
                 context.AddSource(typeToBake.ToFileName(), source);
                 processed.Add(typeToBake.ToGlobalName());
             }
@@ -134,7 +158,7 @@ $@"            {{ ""{o.Name}"", new global::AttributesExtractor.PropertyInfo<{ty
                         .Select((parameter, i) => new KeyValuePair<string, TypedConstant>(parameter.Name, o.ConstructorArguments[i]))
                         .Select(Convert);
                     
-                    return $@"new AttributeData(typeof({o.AttributeClass.ToGlobalName()}), new global::System.Collections.Generic.Dictionary<string, object>{{ {parameters.Join()} }}),";
+                    return $@"new global::AttributesExtractor.AttributeData(typeof({o.AttributeClass.ToGlobalName()}), new global::System.Collections.Generic.Dictionary<string, object>{{ {parameters.Join()} }}),";
                 })
                 .JoinWithNewLine();
 
