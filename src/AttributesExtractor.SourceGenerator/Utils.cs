@@ -12,17 +12,10 @@ namespace AttributesExtractor.SourceGenerator
         public static IEnumerable<ISymbol> GetAllMembers(this ITypeSymbol symbol)
         {
             if (symbol.BaseType != null)
-            {
                 foreach (var member in symbol.BaseType.GetAllMembers())
-                {
                     yield return member;
-                }
-            }
 
-            foreach (var member in symbol.GetMembers())
-            {
-                yield return member;
-            }
+            foreach (var member in symbol.GetMembers()) yield return member;
         }
 
         public static ITypeSymbol GetTypeSymbol(this SymbolInfo info)
@@ -104,7 +97,7 @@ namespace AttributesExtractor.SourceGenerator
         {
             return symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
         }
-        
+
         public static string ToFileName(this ISymbol symbol)
         {
             return symbol.ToGlobalName().Replace(".", "_").Replace("global::", "") + "Extensions";

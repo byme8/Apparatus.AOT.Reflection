@@ -23,7 +23,7 @@ namespace AttributesExtractor.Tests.Utils
                 .WithText(SourceText.From(text.ToString().Replace(textToReplace, newText)))
                 .Project;
         }
-        
+
         public static async Task<IPropertyInfo[]> ExecuteTest(this Project project, User user = null)
         {
             var assembly = await project.CompileToRealAssembly();
@@ -35,10 +35,10 @@ namespace AttributesExtractor.Tests.Utils
             Assert.NotNull(method);
 
             var entries = (IReadOnlyDictionary<string, IPropertyInfo>)method.Invoke(null, new[] { user ?? new User() });
-            
+
             return entries.Values.ToArray();
         }
-        
+
         public static string Stringify(IPropertyInfo propertyInfo)
         {
             return
@@ -49,13 +49,11 @@ namespace AttributesExtractor.Tests.Utils
             params (string TextToReplace, string NewText)[] places)
         {
             foreach (var place in places)
-            {
                 project = await project.ReplacePartOfDocumentAsync(documentName, place.TextToReplace, place.NewText);
-            }
 
             return project;
         }
-        
+
         public static async Task<Project> ReplacePartOfDocumentAsync(this Project project,
             params (string ProjectName, string DocumentName, string TextToReplace, string NewText)[] places)
         {
@@ -68,7 +66,7 @@ namespace AttributesExtractor.Tests.Utils
 
                 solution = newProject.Solution;
             }
-            
+
             return solution.Projects.First(o => o.Name == project.Name);
         }
 
@@ -76,10 +74,7 @@ namespace AttributesExtractor.Tests.Utils
         {
             var compilation = await project.GetCompilationAsync();
             var error = compilation.GetDiagnostics().FirstOrDefault(o => o.Severity == DiagnosticSeverity.Error);
-            if (error != null)
-            {
-                throw new Exception(error.GetMessage());
-            }
+            if (error != null) throw new Exception(error.GetMessage());
 
             using (var memoryStream = new MemoryStream())
             {

@@ -13,7 +13,7 @@ namespace AttributesExtractor.Playground
             Type type = default)
         {
         }
-        
+
         public TestAttribute(string text = default)
         {
         }

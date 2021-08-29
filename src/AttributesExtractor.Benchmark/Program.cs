@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Reflection;
 using AttributesExtractor.Playground;
 using BenchmarkDotNet.Attributes;
@@ -13,7 +12,7 @@ namespace AttributesExtractor.Benchmark
         {
             // new AttributeBenchmark().Reflection();
             // new AttributeBenchmark().AttributeExtractor();
-            
+
             BenchmarkRunner.Run<AttributeBenchmark>();
         }
     }
@@ -36,7 +35,7 @@ namespace AttributesExtractor.Benchmark
         {
             return _user.FirstName;
         }
-        
+
         [Benchmark]
         public string Reflection()
         {
@@ -45,18 +44,13 @@ namespace AttributesExtractor.Benchmark
 
             var required = false;
             foreach (var o in property.GetCustomAttributes())
-            {
                 if (o.GetType() == typeof(RequiredAttribute))
                 {
                     required = true;
                     break;
                 }
-            }
 
-            if (required)
-            {
-                return (string)property.GetMethod?.Invoke(_user, null);
-            }
+            if (required) return (string)property.GetMethod?.Invoke(_user, null);
 
             return string.Empty;
         }
@@ -69,20 +63,15 @@ namespace AttributesExtractor.Benchmark
 
             var required = false;
             foreach (var o in firstName.Attributes)
-            {
                 if (o.Type == typeof(RequiredAttribute))
                 {
                     required = true;
                     break;
                 }
-            }
 
             if (required)
             {
-                if (firstName.TryGetValue(_user, out var value))
-                {
-                    return (string)value;
-                }
+                if (firstName.TryGetValue(_user, out var value)) return (string)value;
 
                 return string.Empty;
             }

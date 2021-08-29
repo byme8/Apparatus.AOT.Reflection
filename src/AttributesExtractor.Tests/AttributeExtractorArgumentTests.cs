@@ -23,9 +23,9 @@ namespace AttributesExtractor.Tests
                         new Dictionary<string, object>
                         {
                             { "int", 1 }, { "float", 0 }, { "text", null }, { "textArray", null }, { "type", null }
-                        }),
+                        })
                 }),
-                new PropertyInfo<User, string>("LastName", new[] { new AttributeData(typeof(RequiredAttribute)) }),
+                new PropertyInfo<User, string>("LastName", new[] { new AttributeData(typeof(RequiredAttribute)) })
             };
 
             var project = await TestProject.Project
@@ -52,9 +52,9 @@ namespace AttributesExtractor.Tests
                         new Dictionary<string, object>
                         {
                             { "text", "test" }
-                        }),
+                        })
                 }),
-                new PropertyInfo<User, string>("LastName", new[] { new AttributeData(typeof(RequiredAttribute)) }),
+                new PropertyInfo<User, string>("LastName", new[] { new AttributeData(typeof(RequiredAttribute)) })
             };
 
             var project = await TestProject.Project
@@ -82,9 +82,9 @@ namespace AttributesExtractor.Tests
                         {
                             { "int", 0 }, { "float", 0 }, { "text", null },
                             { "textArray", new[] { "test", "test1" } }, { "type", null }
-                        }),
+                        })
                 }),
-                new PropertyInfo<User, string>("LastName", new[] { new AttributeData(typeof(RequiredAttribute)) }),
+                new PropertyInfo<User, string>("LastName", new[] { new AttributeData(typeof(RequiredAttribute)) })
             };
 
             var project = await TestProject.Project
@@ -115,7 +115,7 @@ namespace AttributesExtractor.Tests
                             { "type", typeof(int) }
                         })
                 }),
-                new PropertyInfo<User, string>("LastName", new[] { new AttributeData(typeof(RequiredAttribute)) }),
+                new PropertyInfo<User, string>("LastName", new[] { new AttributeData(typeof(RequiredAttribute)) })
             };
 
             var project = await TestProject.Project
