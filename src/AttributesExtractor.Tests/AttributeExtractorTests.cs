@@ -25,8 +25,8 @@ namespace AttributesExtractor.Tests
         {
             var expectedEntries = new[]
             {
-                new PropertyInfo<User, string>("FirstName", new[] { new AttributeData(typeof(RequiredAttribute)) }),
-                new PropertyInfo<User, string>("LastName", new[] { new AttributeData(typeof(RequiredAttribute)) })
+                new PropertyInfo<User, string>("FirstName", new[] { new AttributeData(typeof(RequiredAttribute)), }),
+                new PropertyInfo<User, string>("LastName", new[] { new AttributeData(typeof(RequiredAttribute)), }),
             };
 
             var project = await TestProject.Project
@@ -49,9 +49,9 @@ namespace AttributesExtractor.Tests
                     {
                         new AttributeData(typeof(RequiredAttribute)),
                         new AttributeData(typeof(DescriptionAttribute),
-                            new Dictionary<string, object> { { "description", "Some first name" } })
+                            new Dictionary<string, object> { { "description", "Some first name" }, }),
                     }),
-                new PropertyInfo<User, string>("LastName", new[] { new AttributeData(typeof(RequiredAttribute)) })
+                new PropertyInfo<User, string>("LastName", new[] { new AttributeData(typeof(RequiredAttribute)), }),
             };
 
             var project = await TestProject.Project
@@ -77,7 +77,7 @@ namespace AttributesExtractor.Tests
             var user = new User
             {
                 FirstName = "Jon",
-                LastName = "Smith"
+                LastName = "Smith",
             };
 
             var entries = await project.ExecuteTest(user);
@@ -105,7 +105,7 @@ namespace AttributesExtractor.Tests
             var user = new User
             {
                 FirstName = "Jon",
-                LastName = "Smith"
+                LastName = "Smith",
             };
 
             var entries = await project.ExecuteTest(user);
@@ -126,7 +126,7 @@ namespace AttributesExtractor.Tests
             var user = new User
             {
                 FirstName = "Jon",
-                LastName = "Smith"
+                LastName = "Smith",
             };
 
             var entries = await project.ExecuteTest(user);

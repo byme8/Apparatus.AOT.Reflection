@@ -13,7 +13,10 @@ namespace AttributesExtractor.SourceGenerator
     {
         public void Execute(GeneratorExecutionContext context)
         {
-            if (!(context.SyntaxReceiver is AttributesExtractorSyntaxNotification receiver)) return;
+            if (!(context.SyntaxReceiver is AttributesExtractorSyntaxNotification receiver))
+            {
+                return;
+            }
 
             var extensionType =
                 context.Compilation.GetTypeByMetadataName("AttributesExtractor.AttributesExtractorExtensions");
@@ -27,22 +30,39 @@ namespace AttributesExtractor.SourceGenerator
             var processed = new HashSet<string>();
             foreach (var memberAccess in receiver.MemberAccess)
             {
-                if (context.CancellationToken.IsCancellationRequested) return;
+                if (context.CancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
 
                 var semanticModel = context.Compilation.GetSemanticModel(memberAccess.SyntaxTree);
                 var symbol = ModelExtensions.GetSymbolInfo(semanticModel, memberAccess.Name);
-                if (!(symbol.Symbol is IMethodSymbol methodSymbol)) continue;
+                if (!(symbol.Symbol is IMethodSymbol methodSymbol))
+                {
+                    continue;
+                }
 
                 if (!SymbolEqualityComparer.Default.Equals(extensionMethod, methodSymbol.ReducedFrom) &&
                     !SymbolEqualityComparer.Default.Equals(bootstrapMethod, methodSymbol.ConstructedFrom))
+                {
                     continue;
+                }
 
                 var typeToBake = methodSymbol.TypeArguments.First();
-                if (typeToBake is ITypeParameterSymbol) continue;
+                if (typeToBake is ITypeParameterSymbol)
+                {
+                    continue;
+                }
 
-                if (processed.Contains(typeToBake.ToGlobalName())) continue;
+                if (processed.Contains(typeToBake.ToGlobalName()))
+                {
+                    continue;
+                }
 
-                if (context.CancellationToken.IsCancellationRequested) return;
+                if (context.CancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
 
                 var propertyAndAttributes = typeToBake
                     .GetAllMembers()
@@ -51,7 +71,10 @@ namespace AttributesExtractor.SourceGenerator
                     .GroupBy(o => o.Name)
                     .Select(o =>
                     {
-                        if (o.Count() > 1) return o.Last();
+                        if (o.Count() > 1)
+                        {
+                            return o.Last();
+                        }
 
                         return o.First();
                     })
@@ -93,7 +116,10 @@ namespace AttributesExtractor
     }}
 }}
 ";
-                if (context.CancellationToken.IsCancellationRequested) return;
+                if (context.CancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
 
                 context.AddSource(typeToBake.ToFileName(), source);
                 processed.Add(typeToBake.ToGlobalName());
@@ -110,17 +136,25 @@ namespace AttributesExtractor
             var sb = new StringBuilder();
             if (propertySymbol.GetMethod != null &&
                 propertySymbol.GetMethod.DeclaredAccessibility.HasFlag(Accessibility.Public))
+            {
                 sb.Append($"instance => instance.{propertySymbol.Name}");
+            }
             else
+            {
                 sb.Append("null");
+            }
 
             sb.Append(", ");
 
             if (propertySymbol.SetMethod != null &&
                 propertySymbol.SetMethod.DeclaredAccessibility.HasFlag(Accessibility.Public))
+            {
                 sb.Append($"(instance, value) => instance.{propertySymbol.Name} = value");
+            }
             else
+            {
                 sb.Append("null");
+            }
 
             return sb.ToString();
         }
@@ -144,7 +178,9 @@ namespace AttributesExtractor
         private static string Convert(KeyValuePair<string, TypedConstant> pair)
         {
             if (pair.Value.Kind == TypedConstantKind.Array && !pair.Value.IsNull)
+            {
                 return $@"{{""{pair.Key}"", new[] {pair.Value.ToCSharpString()}}}";
+            }
 
             return $@"{{""{pair.Key}"", {pair.Value.ToCSharpString()}}}";
         }
@@ -161,7 +197,9 @@ namespace AttributesExtractor
                 (memberAccess.Name.ToString() == "GetProperties" ||
                  memberAccess.Name is GenericNameSyntax genericNameSyntax &&
                  genericNameSyntax.Identifier.ToString() == "Bootstrap"))
+            {
                 MemberAccess.Add(memberAccess);
+            }
         }
     }
 }

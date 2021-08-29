@@ -26,7 +26,7 @@ namespace AttributesExtractor.Benchmark
         {
             _user = new User
             {
-                FirstName = "Test"
+                FirstName = "Test",
             };
         }
 
@@ -44,13 +44,18 @@ namespace AttributesExtractor.Benchmark
 
             var required = false;
             foreach (var o in property.GetCustomAttributes())
+            {
                 if (o.GetType() == typeof(RequiredAttribute))
                 {
                     required = true;
                     break;
                 }
+            }
 
-            if (required) return (string)property.GetMethod?.Invoke(_user, null);
+            if (required)
+            {
+                return (string)property.GetMethod?.Invoke(_user, null);
+            }
 
             return string.Empty;
         }
@@ -63,15 +68,20 @@ namespace AttributesExtractor.Benchmark
 
             var required = false;
             foreach (var o in firstName.Attributes)
+            {
                 if (o.Type == typeof(RequiredAttribute))
                 {
                     required = true;
                     break;
                 }
+            }
 
             if (required)
             {
-                if (firstName.TryGetValue(_user, out var value)) return (string)value;
+                if (firstName.TryGetValue(_user, out var value))
+                {
+                    return (string)value;
+                }
 
                 return string.Empty;
             }
