@@ -2,12 +2,12 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
-using AttributesExtractor.Playground;
-using AttributesExtractor.Tests.Data;
-using AttributesExtractor.Tests.Utils;
+using Apparatus.AOT.Reflection.Playground;
+using Apparatus.AOT.Reflection.Tests.Data;
+using Apparatus.AOT.Reflection.Tests.Utils;
 using Xunit;
 
-namespace AttributesExtractor.Tests
+namespace Apparatus.AOT.Reflection.Tests
 {
     public class AttributeExtractorArgumentTests
     {

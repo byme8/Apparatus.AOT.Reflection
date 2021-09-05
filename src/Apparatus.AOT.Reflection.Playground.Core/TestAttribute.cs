@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AttributesExtractor.Playground
+namespace Apparatus.AOT.Reflection.Playground
 {
     [AttributeUsage(AttributeTargets.All, Inherited = false, AllowMultiple = true)]
     public sealed class TestAttribute : Attribute

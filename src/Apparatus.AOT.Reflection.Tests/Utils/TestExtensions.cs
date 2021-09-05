@@ -4,13 +4,13 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using AttributesExtractor.Playground;
-using AttributesExtractor.SourceGenerator;
+using Apparatus.AOT.Reflection.Playground;
+using Apparatus.AOT.Reflection.SourceGenerator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Xunit;
 
-namespace AttributesExtractor.Tests.Utils
+namespace Apparatus.AOT.Reflection.Tests.Utils
 {
     public static class TestExtensions
     {
@@ -28,7 +28,7 @@ namespace AttributesExtractor.Tests.Utils
         {
             var assembly = await project.CompileToRealAssembly();
 
-            var extension = assembly.GetType("AttributesExtractor.AttributesExtractor_Playground_UserExtensions");
+            var extension = assembly.GetType("Apparatus.AOT.Reflection.Apparatus_AOT_Reflection_Playground_UserExtensions");
             Assert.NotNull(extension);
 
             var method = extension.GetMethod("GetProperties", BindingFlags.Static | BindingFlags.Public);

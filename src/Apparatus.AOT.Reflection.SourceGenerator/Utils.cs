@@ -5,7 +5,7 @@ using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 
-namespace AttributesExtractor.SourceGenerator
+namespace Apparatus.AOT.Reflection.SourceGenerator
 {
     public static class Utils
     {

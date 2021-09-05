@@ -1,10 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Reflection;
-using AttributesExtractor.Playground;
+using Apparatus.AOT.Reflection.Playground;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
 
-namespace AttributesExtractor.Benchmark
+namespace Apparatus.AOT.Reflection.Benchmark
 {
     public class Program
     {

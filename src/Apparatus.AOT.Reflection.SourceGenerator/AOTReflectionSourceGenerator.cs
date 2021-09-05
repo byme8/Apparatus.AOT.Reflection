@@ -6,24 +6,24 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace AttributesExtractor.SourceGenerator
+namespace Apparatus.AOT.Reflection.SourceGenerator
 {
     [Generator]
-    public class AttributesExtractorSourceGenerator : ISourceGenerator
+    public class AOTReflectionSourceGenerator : ISourceGenerator
     {
         public void Execute(GeneratorExecutionContext context)
         {
-            if (!(context.SyntaxReceiver is AttributesExtractorSyntaxNotification receiver))
+            if (!(context.SyntaxReceiver is AOTReflectionSyntaxNotification receiver))
             {
                 return;
             }
 
             var extensionType =
-                context.Compilation.GetTypeByMetadataName("AttributesExtractor.AttributesExtractorExtensions");
+                context.Compilation.GetTypeByMetadataName("Apparatus.AOT.Reflection.AOTReflectionExtensions");
             var extensionMethod =
                 extensionType.GetMembers().OfType<IMethodSymbol>().First(o => o.Name == "GetProperties");
             var genericHelperType =
-                context.Compilation.GetTypeByMetadataName("AttributesExtractor.GenericHelper");
+                context.Compilation.GetTypeByMetadataName("Apparatus.AOT.Reflection.GenericHelper");
             var bootstrapMethod =
                 genericHelperType.GetMembers().OfType<IMethodSymbol>().First(o => o.Name == "Bootstrap");
 
@@ -84,7 +84,7 @@ namespace AttributesExtractor.SourceGenerator
 using System;
 using System.Linq;
 
-namespace AttributesExtractor
+namespace Apparatus.AOT.Reflection
 {{
     public static class {typeToBake.ToFileName()}
     {{
@@ -97,9 +97,9 @@ namespace AttributesExtractor
         private static global::System.Lazy<global::System.Collections.Generic.IReadOnlyDictionary<string, IPropertyInfo>> _lazy = new global::System.Lazy<global::System.Collections.Generic.IReadOnlyDictionary<string, IPropertyInfo>>(new global::System.Collections.Generic.Dictionary<string, IPropertyInfo>
         {{
 {propertyAndAttributes.Select(o =>
-        $@"            {{ ""{o.Name}"", new global::AttributesExtractor.PropertyInfo<{typeToBake.ToGlobalName()},{o.Type.ToGlobalName()}>(
+        $@"            {{ ""{o.Name}"", new global::Apparatus.AOT.Reflection.PropertyInfo<{typeToBake.ToGlobalName()},{o.Type.ToGlobalName()}>(
                         ""{o.Name}"", 
-                        new global::AttributesExtractor.AttributeData[] 
+                        new global::Apparatus.AOT.Reflection.AttributeData[] 
                         {{
                             {GenerateAttributes(o.GetAttributes())}
                         }}, 
@@ -128,7 +128,7 @@ namespace AttributesExtractor
 
         public void Initialize(GeneratorInitializationContext context)
         {
-            context.RegisterForSyntaxNotifications(() => new AttributesExtractorSyntaxNotification());
+            context.RegisterForSyntaxNotifications(() => new AOTReflectionSyntaxNotification());
         }
 
         private string GenerateGetterAndSetter(IPropertySymbol propertySymbol)
@@ -170,7 +170,7 @@ namespace AttributesExtractor
                         .Select(Convert);
 
                     return
-                        $@"new global::AttributesExtractor.AttributeData(typeof({o.AttributeClass.ToGlobalName()}), new global::System.Collections.Generic.Dictionary<string, object>{{ {parameters.Join()} }}),";
+                        $@"new global::Apparatus.AOT.Reflection.AttributeData(typeof({o.AttributeClass.ToGlobalName()}), new global::System.Collections.Generic.Dictionary<string, object>{{ {parameters.Join()} }}),";
                 })
                 .JoinWithNewLine();
         }
@@ -186,7 +186,7 @@ namespace AttributesExtractor
         }
     }
 
-    public class AttributesExtractorSyntaxNotification : ISyntaxReceiver
+    public class AOTReflectionSyntaxNotification : ISyntaxReceiver
     {
         public List<MemberAccessExpressionSyntax> MemberAccess { get; } = new List<MemberAccessExpressionSyntax>();
 

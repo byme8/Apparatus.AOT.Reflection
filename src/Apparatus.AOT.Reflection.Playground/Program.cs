@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace AttributesExtractor.Playground
+namespace Apparatus.AOT.Reflection.Playground
 {
     // place to replace 0
 

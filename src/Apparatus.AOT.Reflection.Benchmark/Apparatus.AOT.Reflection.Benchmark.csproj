@@ -7,11 +7,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="BenchmarkDotNet" Version="0.13.1"/>
+        <PackageReference Include="BenchmarkDotNet" Version="0.13.1" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\AttributesExtractor.Playground\AttributesExtractor.Playground.csproj"/>
+        <ProjectReference Include="..\Apparatus.AOT.Reflection.Playground\Apparatus.AOT.Reflection.Playground.csproj" />
     </ItemGroup>
 
 </Project>

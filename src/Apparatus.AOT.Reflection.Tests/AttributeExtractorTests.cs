@@ -4,12 +4,12 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using AttributesExtractor.Playground;
-using AttributesExtractor.Tests.Data;
-using AttributesExtractor.Tests.Utils;
+using Apparatus.AOT.Reflection.Playground;
+using Apparatus.AOT.Reflection.Tests.Data;
+using Apparatus.AOT.Reflection.Tests.Utils;
 using Xunit;
 
-namespace AttributesExtractor.Tests
+namespace Apparatus.AOT.Reflection.Tests
 {
     public class AttributeExtractorTests
     {
@@ -142,7 +142,7 @@ namespace AttributesExtractor.Tests
         {
             var assembly = await TestProject.Project.CompileToRealAssembly();
             var methodInfo = assembly
-                .GetType("AttributesExtractor.Playground.Program")!
+                .GetType("Apparatus.AOT.Reflection.Playground.Program")!
                 .GetMethod("GetUserInfo", BindingFlags.Static | BindingFlags.Public)!;
 
             var properties = methodInfo
@@ -159,7 +159,7 @@ namespace AttributesExtractor.Tests
             var assembly = await project.CompileToRealAssembly();
 
             var methodInfo = assembly
-                .GetType("AttributesExtractor.Playground.Program")!
+                .GetType("Apparatus.AOT.Reflection.Playground.Program")!
                 .GetMethod("GetUserInfo", BindingFlags.Static | BindingFlags.Public)!;
 
             MetadataStore<User>.Data = null;
@@ -176,7 +176,7 @@ namespace AttributesExtractor.Tests
             var assembly = await project.CompileToRealAssembly();
 
             var methodInfo = assembly
-                .GetType("AttributesExtractor.Playground.Program")!
+                .GetType("Apparatus.AOT.Reflection.Playground.Program")!
                 .GetMethod("GetUserInfo", BindingFlags.Static | BindingFlags.Public)!;
 
             var properties = methodInfo
@@ -195,7 +195,7 @@ namespace AttributesExtractor.Tests
             var assembly = await project.CompileToRealAssembly();
 
             var methodInfo = assembly
-                .GetType("AttributesExtractor.Playground.Program")!
+                .GetType("Apparatus.AOT.Reflection.Playground.Program")!
                 .GetMethod("GetUserInfo", BindingFlags.Static | BindingFlags.Public)!;
 
             var properties = methodInfo

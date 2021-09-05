@@ -3,25 +3,25 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31612.314
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AttributesExtractor", "src\AttributesExtractor\AttributesExtractor.csproj", "{B7E5C035-0415-49E5-8A7F-54547C042367}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Apparatus.AOT.Reflection", "src\Apparatus.AOT.Reflection\Apparatus.AOT.Reflection.csproj", "{B7E5C035-0415-49E5-8A7F-54547C042367}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AttributesExtractor.Tests", "src\AttributesExtractor.Tests\AttributesExtractor.Tests.csproj", "{0924066D-6DB2-4889-A52C-62653F42191A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Apparatus.AOT.Reflection.Tests", "src\Apparatus.AOT.Reflection.Tests\Apparatus.AOT.Reflection.Tests.csproj", "{0924066D-6DB2-4889-A52C-62653F42191A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AttributesExtractor.Playground", "src\AttributesExtractor.Playground\AttributesExtractor.Playground.csproj", "{CE8D6D66-437F-4A43-A2EA-1158FF08D8BF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Apparatus.AOT.Reflection.Playground", "src\Apparatus.AOT.Reflection.Playground\Apparatus.AOT.Reflection.Playground.csproj", "{CE8D6D66-437F-4A43-A2EA-1158FF08D8BF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{1D66AE8F-CF20-403F-949E-9CE29F9B24FC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SourceGenerator", "src\SourceGenerator", "{08A1D4A3-2A67-4889-82FF-F36A3A7354D5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AttributesExtractor.SourceGenerator", "src\AttributesExtractor.SourceGenerator\AttributesExtractor.SourceGenerator.csproj", "{778BEBD2-6FF2-4101-B29D-75C48B0B22E6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Apparatus.AOT.Reflection.SourceGenerator", "src\Apparatus.AOT.Reflection.SourceGenerator\Apparatus.AOT.Reflection.SourceGenerator.csproj", "{778BEBD2-6FF2-4101-B29D-75C48B0B22E6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Package", "Package", "{E90440D4-2E8B-429E-905E-7FC89298AA1C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AttributesExtractor.Core", "src\AttributesExtractor.Core\AttributesExtractor.Core.csproj", "{F2B32B58-EB8A-4675-A5DF-9515CB5DEFF2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Apparatus.AOT.Reflection.Core", "src\Apparatus.AOT.Reflection.Core\Apparatus.AOT.Reflection.Core.csproj", "{F2B32B58-EB8A-4675-A5DF-9515CB5DEFF2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AttributesExtractor.Playground.Core", "src\AttributesExtractor.Playground.Core\AttributesExtractor.Playground.Core.csproj", "{B70FE8B3-05E2-49B7-98E1-7F220B74A845}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Apparatus.AOT.Reflection.Playground.Core", "src\Apparatus.AOT.Reflection.Playground.Core\Apparatus.AOT.Reflection.Playground.Core.csproj", "{B70FE8B3-05E2-49B7-98E1-7F220B74A845}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AttributesExtractor.Benchmark", "src\AttributesExtractor.Benchmark\AttributesExtractor.Benchmark.csproj", "{C379A9D2-0CB7-4F06-B2C5-D52216849043}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Apparatus.AOT.Reflection.Benchmark", "src\Apparatus.AOT.Reflection.Benchmark\Apparatus.AOT.Reflection.Benchmark.csproj", "{C379A9D2-0CB7-4F06-B2C5-D52216849043}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

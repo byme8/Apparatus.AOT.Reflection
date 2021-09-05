@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace AttributesExtractor.Playground
+namespace Apparatus.AOT.Reflection.Playground
 {
     public class User
     {

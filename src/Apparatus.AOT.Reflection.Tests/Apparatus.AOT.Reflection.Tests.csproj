@@ -7,8 +7,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.4"/>
-        <PackageReference Include="xunit" Version="2.4.1"/>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.4" />
+        <PackageReference Include="xunit" Version="2.4.1" />
         <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
@@ -17,15 +17,15 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.CodeAnalysis" Version="3.8.0"/>
-        <PackageReference Include="Buildalyzer" Version="3.2.2"/>
-        <PackageReference Include="Buildalyzer.Workspaces" Version="3.2.2"/>
+        <PackageReference Include="Microsoft.CodeAnalysis" Version="3.8.0" />
+        <PackageReference Include="Buildalyzer" Version="3.2.2" />
+        <PackageReference Include="Buildalyzer.Workspaces" Version="3.2.2" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\AttributesExtractor.Playground.Core\AttributesExtractor.Playground.Core.csproj"/>
-        <ProjectReference Include="..\AttributesExtractor.Core\AttributesExtractor.Core.csproj"/>
-        <ProjectReference Include="..\AttributesExtractor.SourceGenerator\AttributesExtractor.SourceGenerator.csproj"/>
+        <ProjectReference Include="..\Apparatus.AOT.Reflection.Playground.Core\Apparatus.AOT.Reflection.Playground.Core.csproj" />
+        <ProjectReference Include="..\Apparatus.AOT.Reflection.Core\Apparatus.AOT.Reflection.Core.csproj" />
+        <ProjectReference Include="..\Apparatus.AOT.Reflection.SourceGenerator\Apparatus.AOT.Reflection.SourceGenerator.csproj" />
     </ItemGroup>
 
 </Project>

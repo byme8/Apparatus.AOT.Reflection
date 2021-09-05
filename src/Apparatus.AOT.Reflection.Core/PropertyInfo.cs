@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace AttributesExtractor
+namespace Apparatus.AOT.Reflection
 {
     public interface IPropertyInfo
     {
