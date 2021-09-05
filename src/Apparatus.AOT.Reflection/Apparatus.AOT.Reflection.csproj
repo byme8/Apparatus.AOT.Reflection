@@ -1,41 +1,41 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
-        <IncludeBuildOutput>false</IncludeBuildOutput>
-        <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
 
-    <PropertyGroup>
-        <PackageId>Apparatus.AOT.Reflection</PackageId>
-        <PackageVersion>0.1.0.0</PackageVersion>
-        <Authors>byme</Authors>
-        <!--    <PackageProjectUrl>https://github.com/byme8/DuckInterface</PackageProjectUrl>-->
-        <!--    <RepositoryUrl>https://github.com/byme8/DuckInterface</RepositoryUrl>-->
-        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-        <!--    <Description>DuckInterface</Description>-->
-        <!--    <PackageTags>DuckInterface, analyzers</PackageTags>-->
-        <NoPackageAnalysis>true</NoPackageAnalysis>
+  <PropertyGroup>
+    <PackageId>Apparatus.AOT.Reflection</PackageId>
+    <PackageVersion>0.1.0.0</PackageVersion>
+    <Authors>byme</Authors>
+    <PackageProjectUrl>https://github.com/byme8/Apparatus.AOT.Reflection</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/byme8/Apparatus.AOT.Reflection</RepositoryUrl>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <Description>Apparatus.AOT.Reflection</Description>
+    <PackageTags>source generator, aot, reflection</PackageTags>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
 
-        <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_AddAnalyzersToOutput</TargetsForTfmSpecificContentInPackage>
-    </PropertyGroup>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_AddAnalyzersToOutput</TargetsForTfmSpecificContentInPackage>
+  </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Apparatus.AOT.Reflection.Core\Apparatus.AOT.Reflection.Core.csproj" />
+    <ProjectReference Include="..\Apparatus.AOT.Reflection.SourceGenerator\Apparatus.AOT.Reflection.SourceGenerator.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="tools\*.ps1" CopyToOutputDirectory="Always" Pack="true" PackagePath="" />
+  </ItemGroup>
+
+  <Target Name="_AddAnalyzersToOutput">
     <ItemGroup>
-        <ProjectReference Include="..\Apparatus.AOT.Reflection.Core\Apparatus.AOT.Reflection.Core.csproj" />
-        <ProjectReference Include="..\Apparatus.AOT.Reflection.SourceGenerator\Apparatus.AOT.Reflection.SourceGenerator.csproj" />
+      <TfmSpecificPackageFile Include="$(OutputPath)\Apparatus.AOT.Reflection.SourceGenerator.dll" PackagePath="analyzers/dotnet/cs" />
+      <TfmSpecificPackageFile Include="$(OutputPath)\Apparatus.AOT.Reflection.Core.dll" PackagePath="lib/netstandard2.0" />
     </ItemGroup>
-
-    <ItemGroup>
-        <None Update="tools\*.ps1" CopyToOutputDirectory="Always" Pack="true" PackagePath="" />
-    </ItemGroup>
-
-    <Target Name="_AddAnalyzersToOutput">
-        <ItemGroup>
-            <TfmSpecificPackageFile Include="$(OutputPath)\Apparatus.AOT.Reflection.SourceGenerator.dll" PackagePath="analyzers/dotnet/cs" />
-            <TfmSpecificPackageFile Include="$(OutputPath)\Apparatus.AOT.Reflection.Core.dll" PackagePath="lib/netstandard2.0" />
-        </ItemGroup>
-    </Target>
+  </Target>
 
 
 </Project>
