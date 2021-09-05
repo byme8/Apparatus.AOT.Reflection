@@ -1,12 +1,12 @@
 
 # AOT.Reflection is faster reflection powered via Source Generators
 
-The goal of this library to create a subset of reflection that will be a really fast one. The source generators will help us with that.
+The goal of this library is to create a subset of reflection that will be faster than the default one and will not break at the platforms with the AOT compilation support. The source generators will help us with that.
 
 
 # How to use
 
-To make it work you will need to install a nuget package ``` Apparatus.AOT.Reflection ```:
+To make it work you will need to install a NuGet package ``` Apparatus.AOT.Reflection ```:
 
 ```
 dotnet add package Apparatus.AOT.Reflection
@@ -32,7 +32,7 @@ public static void Main()
 }
 ```
 
-This sample will print the names of propeties.
+This sample will print the names of properties.
 ```
 FirstName
 LastName
@@ -40,9 +40,8 @@ LastName
 
 # Performance
 
-If you wondering about the performance we have benchmarks for that.
-Lets imagine that we need to find a property with ``` Required ``` attribute and name the ``` FirstName ```.
-If it exists then print it value, otherwise return the empty string.
+Let's imagine that we need to find a property with ``` Required ``` attribute and with the name  ``` FirstName ```.
+If it exists then print the value of the property, otherwise return the empty string.
 Here the source code with default reflection:
 
 ``` cs
@@ -96,7 +95,7 @@ if (required)
 return string.Empty;
 ```
 
-Here is the benchmark results:
+Here are the benchmark results:
 ``` 
 BenchmarkDotNet=v0.13.1, OS=macOS Big Sur 11.5.2 (20G95) [Darwin 20.6.0]
 Apple M1, 1 CPU, 8 logical and 8 physical cores
@@ -115,4 +114,10 @@ Apple M1, 1 CPU, 8 logical and 8 physical cores
 As you can see the AOT.Reflection is significantly faster comparing to default reflection.
 The full source code of benchmarks you can find [here](https://github.com/byme8/Apparatus.AOT.Reflection/blob/master/src/Apparatus.AOT.Reflection.Benchmark/Program.cs). 
 
-To be continue...
+# Support
+
+Right now, only public properties are supported.
+I have plans to add as support for enums and public methods in the future.
+Regarding the private members, I have doubts about them, because they would definitely ruin the performance, but we will see.
+
+To be continued...
