@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -16,16 +17,12 @@ namespace Apparatus.AOT.Reflection.Tests
         {
             var expectedEntries = new[]
             {
-                new PropertyInfo<User, string>("FirstName", new[]
+                new PropertyInfo<User, string>("FirstName", new Attribute[]
                 {
-                    new AttributeData(typeof(RequiredAttribute)),
-                    new AttributeData(typeof(TestAttribute),
-                        new Dictionary<string, object>
-                        {
-                            { "int", 1 }, { "float", 0 }, { "text", null }, { "textArray", null }, { "type", null },
-                        }),
+                    new RequiredAttribute(),
+                    new TestAttribute(1)
                 }),
-                new PropertyInfo<User, string>("LastName", new[] { new AttributeData(typeof(RequiredAttribute)), }),
+                new PropertyInfo<User, string>("LastName", new[] {new RequiredAttribute() }),
             };
 
             var project = await TestProject.Project
@@ -36,8 +33,7 @@ namespace Apparatus.AOT.Reflection.Tests
 
             var entries = await project.ExecuteTest();
 
-            Assert.True(expectedEntries.Select(TestExtensions.Stringify)
-                .SequenceEqual(entries!.Select(TestExtensions.Stringify)));
+            Assert.True(expectedEntries.SequenceEqual(entries!));
         }
 
         [Fact]
@@ -45,16 +41,12 @@ namespace Apparatus.AOT.Reflection.Tests
         {
             var expectedEntries = new[]
             {
-                new PropertyInfo<User, string>("FirstName", new[]
+                new PropertyInfo<User, string>("FirstName", new Attribute[]
                 {
-                    new AttributeData(typeof(RequiredAttribute)),
-                    new AttributeData(typeof(TestAttribute),
-                        new Dictionary<string, object>
-                        {
-                            { "text", "test" },
-                        }),
+                    new RequiredAttribute(),
+                    new TestAttribute("test")
                 }),
-                new PropertyInfo<User, string>("LastName", new[] { new AttributeData(typeof(RequiredAttribute)), }),
+                new PropertyInfo<User, string>("LastName", new[] { new RequiredAttribute(), }),
             };
 
             var project = await TestProject.Project
@@ -65,8 +57,7 @@ namespace Apparatus.AOT.Reflection.Tests
 
             var entries = await project.ExecuteTest();
 
-            Assert.True(expectedEntries.Select(TestExtensions.Stringify)
-                .SequenceEqual(entries!.Select(TestExtensions.Stringify)));
+            Assert.True(expectedEntries.SequenceEqual(entries!));
         }
 
         [Fact]
@@ -74,17 +65,12 @@ namespace Apparatus.AOT.Reflection.Tests
         {
             var expectedEntries = new[]
             {
-                new PropertyInfo<User, string>("FirstName", new[]
+                new PropertyInfo<User, string>("FirstName", new Attribute[]
                 {
-                    new AttributeData(typeof(RequiredAttribute)),
-                    new AttributeData(typeof(TestAttribute),
-                        new Dictionary<string, object>
-                        {
-                            { "int", 0 }, { "float", 0 }, { "text", null },
-                            { "textArray", new[] { "test", "test1", } }, { "type", null },
-                        }),
+                    new RequiredAttribute(),
+                    new TestAttribute(textArray:  new[] { "test", "test1",})
                 }),
-                new PropertyInfo<User, string>("LastName", new[] { new AttributeData(typeof(RequiredAttribute)), }),
+                new PropertyInfo<User, string>("LastName", new[] { new RequiredAttribute(), }),
             };
 
             var project = await TestProject.Project
@@ -96,8 +82,7 @@ namespace Apparatus.AOT.Reflection.Tests
 
             var entries = await project.ExecuteTest();
 
-            Assert.True(expectedEntries.Select(TestExtensions.Stringify)
-                .SequenceEqual(entries!.Select(TestExtensions.Stringify)));
+            Assert.True(expectedEntries.SequenceEqual(entries!));
         }
 
         [Fact]
@@ -105,17 +90,12 @@ namespace Apparatus.AOT.Reflection.Tests
         {
             var expectedEntries = new[]
             {
-                new PropertyInfo<User, string>("FirstName", new[]
+                new PropertyInfo<User, string>("FirstName", new Attribute[]
                 {
-                    new AttributeData(typeof(RequiredAttribute)),
-                    new AttributeData(typeof(TestAttribute),
-                        new Dictionary<string, object>
-                        {
-                            { "int", 0 }, { "float", 0 }, { "text", null }, { "textArray", null },
-                            { "type", typeof(int) },
-                        }),
+                    new RequiredAttribute(),
+                    new TestAttribute(type: typeof(int))
                 }),
-                new PropertyInfo<User, string>("LastName", new[] { new AttributeData(typeof(RequiredAttribute)), }),
+                new PropertyInfo<User, string>("LastName", new[] { new RequiredAttribute(), }),
             };
 
             var project = await TestProject.Project
@@ -126,8 +106,7 @@ namespace Apparatus.AOT.Reflection.Tests
 
             var entries = await project.ExecuteTest();
 
-            Assert.True(expectedEntries.Select(TestExtensions.Stringify)
-                .SequenceEqual(entries!.Select(TestExtensions.Stringify)));
+            Assert.True(expectedEntries.SequenceEqual(entries!));
         }
     }
 }

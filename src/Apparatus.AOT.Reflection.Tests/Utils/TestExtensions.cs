@@ -39,12 +39,6 @@ namespace Apparatus.AOT.Reflection.Tests.Utils
             return entries.Values.ToArray();
         }
 
-        public static string Stringify(IPropertyInfo propertyInfo)
-        {
-            return
-                $"{propertyInfo.Name}{propertyInfo.Attributes.Select(o => $"{o.Type.FullName}{o.Parameters.Select(oo => oo.Key + oo.Value).Join()}").Join()}";
-        }
-
         public static async Task<Project> ReplacePartOfDocumentAsync(this Project project, string documentName,
             params (string TextToReplace, string NewText)[] places)
         {

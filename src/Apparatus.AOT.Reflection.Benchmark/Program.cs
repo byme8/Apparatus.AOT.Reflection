@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using Apparatus.AOT.Reflection.Playground;
 using BenchmarkDotNet.Attributes;
@@ -61,7 +63,7 @@ namespace Apparatus.AOT.Reflection.Benchmark
         }
 
         [Benchmark]
-        public string AttributeExtractor()
+        public string AOTReflection()
         {
             var entries = _user.GetProperties();
             var firstName = entries[nameof(User.FirstName)];
@@ -69,7 +71,7 @@ namespace Apparatus.AOT.Reflection.Benchmark
             var required = false;
             foreach (var o in firstName.Attributes)
             {
-                if (o.Type == typeof(RequiredAttribute))
+                if (o is RequiredAttribute)
                 {
                     required = true;
                     break;

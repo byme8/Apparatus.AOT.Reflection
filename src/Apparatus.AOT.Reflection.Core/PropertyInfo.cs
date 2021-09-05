@@ -6,7 +6,7 @@ namespace Apparatus.AOT.Reflection
     public interface IPropertyInfo
     {
         string Name { get; }
-        AttributeData[] Attributes { get; }
+        Attribute[] Attributes { get; }
 
         bool TryGetValue(object instance, out object value);
         bool TrySetValue(object instance, object value);
@@ -31,7 +31,7 @@ namespace Apparatus.AOT.Reflection
 
         public PropertyInfo(
             string name,
-            AttributeData[] attributes,
+            Attribute[] attributes,
             Func<TInstance, TPropertyType> getGetValue = null,
             Action<TInstance, TPropertyType> setGetValue = null)
         {
@@ -42,7 +42,7 @@ namespace Apparatus.AOT.Reflection
         }
 
         public string Name { get; }
-        public AttributeData[] Attributes { get; }
+        public Attribute[] Attributes { get; }
 
 
         public bool TryGetValue(object instance, out object value)

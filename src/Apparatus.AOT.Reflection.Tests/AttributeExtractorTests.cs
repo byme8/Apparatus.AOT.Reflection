@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -25,8 +26,8 @@ namespace Apparatus.AOT.Reflection.Tests
         {
             var expectedEntries = new[]
             {
-                new PropertyInfo<User, string>("FirstName", new[] { new AttributeData(typeof(RequiredAttribute)), }),
-                new PropertyInfo<User, string>("LastName", new[] { new AttributeData(typeof(RequiredAttribute)), }),
+                new PropertyInfo<User, string>("FirstName", new Attribute[] { new RequiredAttribute(), }),
+                new PropertyInfo<User, string>("LastName", new Attribute[] { new RequiredAttribute(), }),
             };
 
             var project = await TestProject.Project
@@ -35,8 +36,8 @@ namespace Apparatus.AOT.Reflection.Tests
 
             var entries = await project.ExecuteTest();
 
-            Assert.True(expectedEntries.Select(TestExtensions.Stringify)
-                .SequenceEqual(entries!.Select(TestExtensions.Stringify)));
+            Assert.True(expectedEntries
+                .SequenceEqual(entries!));
         }
 
         [Fact]
@@ -45,13 +46,12 @@ namespace Apparatus.AOT.Reflection.Tests
             var expectedEntries = new[]
             {
                 new PropertyInfo<User, string>("FirstName",
-                    new[]
+                    new Attribute[]
                     {
-                        new AttributeData(typeof(RequiredAttribute)),
-                        new AttributeData(typeof(DescriptionAttribute),
-                            new Dictionary<string, object> { { "description", "Some first name" }, }),
+                        new RequiredAttribute(),
+                        new DescriptionAttribute("Some first name" )
                     }),
-                new PropertyInfo<User, string>("LastName", new[] { new AttributeData(typeof(RequiredAttribute)), }),
+                new PropertyInfo<User, string>("LastName", new Attribute[] { new RequiredAttribute(), }),
             };
 
             var project = await TestProject.Project
@@ -63,8 +63,8 @@ namespace Apparatus.AOT.Reflection.Tests
 
             var entries = await project.ExecuteTest();
 
-            Assert.True(expectedEntries.Select(TestExtensions.Stringify)
-                .SequenceEqual(entries!.Select(TestExtensions.Stringify)));
+            Assert.True(expectedEntries
+                .SequenceEqual(entries!));
         }
 
         [Fact]

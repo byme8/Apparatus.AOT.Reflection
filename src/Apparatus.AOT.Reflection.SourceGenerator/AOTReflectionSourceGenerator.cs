@@ -99,7 +99,7 @@ namespace Apparatus.AOT.Reflection
 {propertyAndAttributes.Select(o =>
         $@"            {{ ""{o.Name}"", new global::Apparatus.AOT.Reflection.PropertyInfo<{typeToBake.ToGlobalName()},{o.Type.ToGlobalName()}>(
                         ""{o.Name}"", 
-                        new global::Apparatus.AOT.Reflection.AttributeData[] 
+                        new global::System.Attribute[] 
                         {{
                             {GenerateAttributes(o.GetAttributes())}
                         }}, 
@@ -170,7 +170,7 @@ namespace Apparatus.AOT.Reflection
                         .Select(Convert);
 
                     return
-                        $@"new global::Apparatus.AOT.Reflection.AttributeData(typeof({o.AttributeClass.ToGlobalName()}), new global::System.Collections.Generic.Dictionary<string, object>{{ {parameters.Join()} }}),";
+                        $@"new {o.AttributeClass.ToGlobalName()}({parameters.Join()}),";
                 })
                 .JoinWithNewLine();
         }
@@ -179,10 +179,10 @@ namespace Apparatus.AOT.Reflection
         {
             if (pair.Value.Kind == TypedConstantKind.Array && !pair.Value.IsNull)
             {
-                return $@"{{""{pair.Key}"", new[] {pair.Value.ToCSharpString()}}}";
+                return $@"{{""{pair.Key}"": new[] {pair.Value.ToCSharpString()}}}";
             }
 
-            return $@"{{""{pair.Key}"", {pair.Value.ToCSharpString()}}}";
+            return $@"{{""{pair.Key}"": {pair.Value.ToCSharpString()}}}";
         }
     }
 
