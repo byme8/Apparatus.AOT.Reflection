@@ -4,28 +4,33 @@ using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Apparatus.AOT.Reflection.SourceGenerator
 {
     [Generator]
-    public class AOTReflectionSourceGenerator : ISourceGenerator
+    public class AotPropertiesReflectionSourceGenerator : ISourceGenerator
     {
         public void Execute(GeneratorExecutionContext context)
         {
-            if (!(context.SyntaxReceiver is AOTReflectionSyntaxNotification receiver))
+            if (!(context.SyntaxReceiver is AotPropertiesReflectionSyntaxNotification receiver))
             {
                 return;
             }
 
-            var extensionType =
-                context.Compilation.GetTypeByMetadataName("Apparatus.AOT.Reflection.AOTReflectionExtensions");
-            var extensionMethod =
-                extensionType.GetMembers().OfType<IMethodSymbol>().First(o => o.Name == "GetProperties");
-            var genericHelperType =
-                context.Compilation.GetTypeByMetadataName("Apparatus.AOT.Reflection.GenericHelper");
+            var extensionType = context.Compilation
+                .GetTypeByMetadataName("Apparatus.AOT.Reflection.AOTReflectionExtensions");
+            var extensionMethod = extensionType
+                .GetMembers()
+                .OfType<IMethodSymbol>()
+                .First(o => o.Name == "GetProperties");
+            
+            var genericHelperType = context.Compilation
+                .GetTypeByMetadataName("Apparatus.AOT.Reflection.GenericHelper");
             var bootstrapMethod =
-                genericHelperType.GetMembers().OfType<IMethodSymbol>().First(o => o.Name == "Bootstrap");
+                genericHelperType
+                    .GetMembers()
+                    .OfType<IMethodSymbol>()
+                    .First(o => o.Name == "Bootstrap");
 
             var processed = new HashSet<string>();
             foreach (var memberAccess in receiver.MemberAccess)
@@ -48,39 +53,59 @@ namespace Apparatus.AOT.Reflection.SourceGenerator
                     continue;
                 }
 
-                var typeToBake = methodSymbol.TypeArguments.First();
-                if (typeToBake is ITypeParameterSymbol)
-                {
-                    continue;
-                }
-
-                if (processed.Contains(typeToBake.ToGlobalName()))
-                {
-                    continue;
-                }
-
+                
                 if (context.CancellationToken.IsCancellationRequested)
                 {
                     return;
                 }
 
-                var propertyAndAttributes = typeToBake
-                    .GetAllMembers()
-                    .OfType<IPropertySymbol>()
-                    .Where(o => o.DeclaredAccessibility.HasFlag(Accessibility.Public))
-                    .GroupBy(o => o.Name)
-                    .Select(o =>
+                
+                var typeToBake = methodSymbol.TypeArguments.First();
+                if (processed.Contains(typeToBake.ToGlobalName()))
+                {
+                    continue;
+                }
+
+                if (typeToBake is ITypeParameterSymbol)
+                {
+                    continue;
+                }
+
+                if (typeToBake.TypeKind == TypeKind.Enum)
+                {
+                    continue;
+                }
+
+                var source = GenerateExtensionForProperties(typeToBake);
+                if (context.CancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                context.AddSource(typeToBake.ToFileName(), source);
+                processed.Add(typeToBake.ToGlobalName());
+            }
+        }
+
+        private string GenerateExtensionForProperties(ITypeSymbol typeToBake)
+        {
+            var propertyAndAttributes = typeToBake
+                .GetAllMembers()
+                .OfType<IPropertySymbol>()
+                .Where(o => o.DeclaredAccessibility.HasFlag(Accessibility.Public))
+                .GroupBy(o => o.Name)
+                .Select(o =>
+                {
+                    if (o.Count() > 1)
                     {
-                        if (o.Count() > 1)
-                        {
-                            return o.Last();
-                        }
+                        return o.Last();
+                    }
 
-                        return o.First();
-                    })
-                    .ToArray();
+                    return o.First();
+                })
+                .ToArray();
 
-                var source = $@"
+            var source = $@"
 using System;
 using System.Linq;
 
@@ -101,7 +126,7 @@ namespace Apparatus.AOT.Reflection
                         ""{o.Name}"", 
                         new global::System.Attribute[] 
                         {{
-                            {GenerateAttributes(o.GetAttributes())}
+                            {o.GetAttributes().GenerateAttributes()}
                         }}, 
                         {GenerateGetterAndSetter(o)})
                 }},")
@@ -116,19 +141,12 @@ namespace Apparatus.AOT.Reflection
     }}
 }}
 ";
-                if (context.CancellationToken.IsCancellationRequested)
-                {
-                    return;
-                }
-
-                context.AddSource(typeToBake.ToFileName(), source);
-                processed.Add(typeToBake.ToGlobalName());
-            }
+            return source;
         }
 
         public void Initialize(GeneratorInitializationContext context)
         {
-            context.RegisterForSyntaxNotifications(() => new AOTReflectionSyntaxNotification());
+            context.RegisterForSyntaxNotifications(() => new AotPropertiesReflectionSyntaxNotification());
         }
 
         private string GenerateGetterAndSetter(IPropertySymbol propertySymbol)
@@ -159,47 +177,6 @@ namespace Apparatus.AOT.Reflection
             return sb.ToString();
         }
 
-        private static string GenerateAttributes(ImmutableArray<AttributeData> attributes)
-        {
-            return attributes
-                .Select(o =>
-                {
-                    var parameters = o.AttributeConstructor.Parameters
-                        .Select((parameter, i) =>
-                            new KeyValuePair<string, TypedConstant>(parameter.Name, o.ConstructorArguments[i]))
-                        .Select(Convert);
-
-                    return
-                        $@"new {o.AttributeClass.ToGlobalName()}({parameters.Join()}),";
-                })
-                .JoinWithNewLine();
-        }
-
-        private static string Convert(KeyValuePair<string, TypedConstant> pair)
-        {
-            if (pair.Value.Kind == TypedConstantKind.Array && !pair.Value.IsNull)
-            {
-                return $@"{{""{pair.Key}"": new[] {pair.Value.ToCSharpString()}}}";
-            }
-
-            return $@"{{""{pair.Key}"": {pair.Value.ToCSharpString()}}}";
-        }
-    }
-
-    public class AOTReflectionSyntaxNotification : ISyntaxReceiver
-    {
-        public List<MemberAccessExpressionSyntax> MemberAccess { get; } = new List<MemberAccessExpressionSyntax>();
-
-        public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
-        {
-            if (syntaxNode is InvocationExpressionSyntax invocation &&
-                invocation.Expression is MemberAccessExpressionSyntax memberAccess &&
-                (memberAccess.Name.ToString() == "GetProperties" ||
-                 memberAccess.Name is GenericNameSyntax genericNameSyntax &&
-                 genericNameSyntax.Identifier.ToString() == "Bootstrap"))
-            {
-                MemberAccess.Add(memberAccess);
-            }
-        }
+        
     }
 }

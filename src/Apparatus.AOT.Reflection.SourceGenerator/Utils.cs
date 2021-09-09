@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Apparatus.AOT.Reflection.SourceGenerator
@@ -60,6 +62,32 @@ namespace Apparatus.AOT.Reflection.SourceGenerator
                 .ToArray();
 
             return (!missingSymbols.Any(), missingSymbols);
+        }
+        
+        public static string GenerateAttributes(this ImmutableArray<AttributeData> attributes)
+        {
+            return attributes
+                .Select(o =>
+                {
+                    var parameters = o.AttributeConstructor.Parameters
+                        .Select((parameter, i) =>
+                            new KeyValuePair<string, TypedConstant>(parameter.Name, o.ConstructorArguments[i]))
+                        .Select(Convert);
+
+                    return
+                        $@"new {o.AttributeClass.ToGlobalName()}({parameters.Join()}),";
+                })
+                .JoinWithNewLine();
+        }
+
+        public  static string Convert(KeyValuePair<string, TypedConstant> pair)
+        {
+            if (pair.Value.Kind == TypedConstantKind.Array && !pair.Value.IsNull)
+            {
+                return $@"new[] {pair.Value.ToCSharpString()}";
+            }
+
+            return $@"{pair.Value.ToCSharpString()}";
         }
 
         private static Dictionary<string, ISymbol> MemberThatCanBeDucked(ITypeSymbol type)

@@ -1,7 +1,15 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace Apparatus.AOT.Reflection.Playground
 {
+    public enum UserKind
+    {
+        User,
+        [Description("Admin user")]
+        Admin
+    }
+
     public class User
     {
         [Required]

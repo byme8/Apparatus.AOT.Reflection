@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Linq;
 
 namespace Apparatus.AOT.Reflection
 {
@@ -12,20 +12,68 @@ namespace Apparatus.AOT.Reflection
         bool TrySetValue(object instance, object value);
     }
 
-    public class AttributeData
+    public class PropertyInfo<TInstance, TPropertyType> : IPropertyInfo, IEquatable<PropertyInfo<TInstance, TPropertyType>>
     {
-        public AttributeData(Type type, Dictionary<string, object> parameters = default)
+        public bool Equals(PropertyInfo<TInstance, TPropertyType> other)
         {
-            Type = type;
-            Parameters = parameters ?? new Dictionary<string, object>();
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return Equals(_getGetValue, other._getGetValue) && 
+                   Equals(_setGetValue, other._setGetValue) && Name == other.Name && 
+                   Attributes.SequenceEqual(other.Attributes);
         }
 
-        public Type Type { get; set; }
-        public Dictionary<string, object> Parameters { get; set; }
-    }
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
 
-    public class PropertyInfo<TInstance, TPropertyType> : IPropertyInfo
-    {
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != this.GetType())
+            {
+                return false;
+            }
+
+            var other = (PropertyInfo<TInstance, TPropertyType>)obj;
+            return this.Name == other.Name && Attributes.SequenceEqual(other.Attributes);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = (_getGetValue != null ? _getGetValue.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (_setGetValue != null ? _setGetValue.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (Name != null ? Name.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (Attributes != null ? Attributes.GetHashCode() : 0);
+                return hashCode;
+            }
+        }
+
+        public static bool operator ==(PropertyInfo<TInstance, TPropertyType> left, PropertyInfo<TInstance, TPropertyType> right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator !=(PropertyInfo<TInstance, TPropertyType> left, PropertyInfo<TInstance, TPropertyType> right)
+        {
+            return !Equals(left, right);
+        }
+
         private readonly Func<TInstance, TPropertyType> _getGetValue;
         private readonly Action<TInstance, TPropertyType> _setGetValue;
 

@@ -16,6 +16,8 @@ namespace Apparatus.AOT.Reflection.Playground
         {
             var user = new User();
             var attributes = user.GetProperties();
+            var userKind = UserKind.Admin;
+            var value = userKind.GetEnumValueInfo();
         }
 
         public static IReadOnlyDictionary<string, IPropertyInfo> GetUserInfo()

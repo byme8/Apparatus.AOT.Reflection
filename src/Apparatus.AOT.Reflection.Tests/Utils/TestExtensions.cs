@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -7,6 +8,7 @@ using System.Threading.Tasks;
 using Apparatus.AOT.Reflection.Playground;
 using Apparatus.AOT.Reflection.SourceGenerator;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 using Xunit;
 
@@ -24,7 +26,7 @@ namespace Apparatus.AOT.Reflection.Tests.Utils
                 .Project;
         }
 
-        public static async Task<IPropertyInfo[]> ExecuteTest(this Project project, User user = null)
+        public static async Task<IPropertyInfo[]> ExecutePropertiesTest(this Project project, User user = null)
         {
             var assembly = await project.CompileToRealAssembly();
 
@@ -38,7 +40,7 @@ namespace Apparatus.AOT.Reflection.Tests.Utils
 
             return entries.Values.ToArray();
         }
-
+        
         public static async Task<Project> ReplacePartOfDocumentAsync(this Project project, string documentName,
             params (string TextToReplace, string NewText)[] places)
         {
@@ -69,7 +71,13 @@ namespace Apparatus.AOT.Reflection.Tests.Utils
         public static async Task<Assembly> CompileToRealAssembly(this Project project)
         {
             var compilation = await project.GetCompilationAsync();
-            var error = compilation.GetDiagnostics().FirstOrDefault(o => o.Severity == DiagnosticSeverity.Error);
+            var analyzerResults = await compilation
+                .WithAnalyzers(ImmutableArray.Create<DiagnosticAnalyzer>(new[] { new AOTReflectionAnalyzer() }))
+                .GetAllDiagnosticsAsync();
+
+            var error = compilation.GetDiagnostics().Concat(analyzerResults)
+                .FirstOrDefault(o => o.Severity == DiagnosticSeverity.Error);
+            
             if (error != null)
             {
                 throw new Exception(error.GetMessage());

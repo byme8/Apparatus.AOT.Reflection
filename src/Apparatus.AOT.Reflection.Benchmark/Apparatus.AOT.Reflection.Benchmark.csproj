@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net5.0</TargetFramework>
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
@@ -12,10 +12,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Apparatus.AOT.Reflection.Playground\Apparatus.AOT.Reflection.Playground.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="BenchmarkDotNet.Artifacts\results" />
     </ItemGroup>
 
 </Project>

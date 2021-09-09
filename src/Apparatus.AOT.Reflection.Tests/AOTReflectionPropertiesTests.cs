@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Apparatus.AOT.Reflection.Tests
 {
-    public class AttributeExtractorTests
+    public class AOTReflectionPropertiesTests
     {
         [Fact]
         public async Task CompiledWithoutErrors()
@@ -34,7 +34,7 @@ namespace Apparatus.AOT.Reflection.Tests
                 .ReplacePartOfDocumentAsync("Program.cs", "// place to replace 1",
                     @"var attributes = user.GetProperties();");
 
-            var entries = await project.ExecuteTest();
+            var entries = await project.ExecutePropertiesTest();
 
             Assert.True(expectedEntries
                 .SequenceEqual(entries!));
@@ -61,7 +61,7 @@ namespace Apparatus.AOT.Reflection.Tests
                     (TestProject.Core.Name, "User.cs", "// place to replace 2",
                         @"[System.ComponentModel.Description(""Some first name"")]"));
 
-            var entries = await project.ExecuteTest();
+            var entries = await project.ExecutePropertiesTest();
 
             Assert.True(expectedEntries
                 .SequenceEqual(entries!));
@@ -80,7 +80,7 @@ namespace Apparatus.AOT.Reflection.Tests
                 LastName = "Smith",
             };
 
-            var entries = await project.ExecuteTest(user);
+            var entries = await project.ExecutePropertiesTest(user);
 
             var firstNameEntry = entries.First(o => o.Name == nameof(User.FirstName));
             var success = firstNameEntry.TryGetValue(user, out var value);
@@ -108,7 +108,7 @@ namespace Apparatus.AOT.Reflection.Tests
                 LastName = "Smith",
             };
 
-            var entries = await project.ExecuteTest(user);
+            var entries = await project.ExecutePropertiesTest(user);
 
             var firstNameEntry = entries.First(o => o.Name == nameof(User.FirstName));
             var success = firstNameEntry.TryGetValue(project, out var value);
@@ -129,7 +129,7 @@ namespace Apparatus.AOT.Reflection.Tests
                 LastName = "Smith",
             };
 
-            var entries = await project.ExecuteTest(user);
+            var entries = await project.ExecutePropertiesTest(user);
 
             var firstNameEntry = entries.First(o => o.Name == nameof(User.FirstName));
             var success = firstNameEntry.TrySetValue(project, "Marry");

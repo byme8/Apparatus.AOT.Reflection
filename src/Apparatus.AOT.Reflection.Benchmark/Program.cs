@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Reflection;
 using Apparatus.AOT.Reflection.Playground;
 using BenchmarkDotNet.Attributes;
@@ -8,23 +10,48 @@ using BenchmarkDotNet.Running;
 
 namespace Apparatus.AOT.Reflection.Benchmark
 {
+    public enum AccountKind
+    {
+        User,
+        Admin,
+        Customer,
+        Manager
+    }
+    
     public class Program
     {
         public static void Main()
         {
-            // new AttributeBenchmark().Reflection();
-            // new AttributeBenchmark().AttributeExtractor();
+            
+            // new PropertiesBenchmark().Reflection();
+            // new PropertiesBenchmark().AttributeExtractor();
 
-            BenchmarkRunner.Run<AttributeBenchmark>();
+            BenchmarkRunner.Run<EnumBenchmark>();
+        }
+    }
+
+    [MemoryDiagnoser()]
+    public class EnumBenchmark
+    {
+        [Benchmark]
+        public void GetValuesAOT()
+        {
+            var values = EnumHelper.GetEnumInfo<AccountKind>();
+        }
+        
+        [Benchmark]
+        public void GetValuesReflection()
+        {
+            var values = Enum.GetValues<AccountKind>();
         }
     }
 
     [MemoryDiagnoser]
-    public class AttributeBenchmark
+    public class PropertiesBenchmark
     {
         private readonly User _user;
 
-        public AttributeBenchmark()
+        public PropertiesBenchmark()
         {
             _user = new User
             {

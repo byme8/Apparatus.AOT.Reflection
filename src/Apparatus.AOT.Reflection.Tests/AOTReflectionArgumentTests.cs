@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Apparatus.AOT.Reflection.Tests
 {
-    public class AttributeExtractorArgumentTests
+    public class AOTReflectionArgumentTests
     {
         [Fact]
         public async Task IntWorks()
@@ -31,7 +31,7 @@ namespace Apparatus.AOT.Reflection.Tests
                         @"var attributes = user.GetProperties();"),
                     (TestProject.Core.Name, "User.cs", "// place to replace 2", @"[Test(@int: 1)]"));
 
-            var entries = await project.ExecuteTest();
+            var entries = await project.ExecutePropertiesTest();
 
             Assert.True(expectedEntries.SequenceEqual(entries!));
         }
@@ -55,7 +55,7 @@ namespace Apparatus.AOT.Reflection.Tests
                         @"var attributes = user.GetProperties();"),
                     (TestProject.Core.Name, "User.cs", "// place to replace 2", @"[Test(text: ""test"")]"));
 
-            var entries = await project.ExecuteTest();
+            var entries = await project.ExecutePropertiesTest();
 
             Assert.True(expectedEntries.SequenceEqual(entries!));
         }
@@ -80,7 +80,7 @@ namespace Apparatus.AOT.Reflection.Tests
                     (TestProject.Core.Name, "User.cs", "// place to replace 2",
                         @"[Test(textArray: new[] { ""test"", ""test1"" })]"));
 
-            var entries = await project.ExecuteTest();
+            var entries = await project.ExecutePropertiesTest();
 
             Assert.True(expectedEntries.SequenceEqual(entries!));
         }
@@ -104,7 +104,7 @@ namespace Apparatus.AOT.Reflection.Tests
                         @"var attributes = user.GetProperties();"),
                     (TestProject.Core.Name, "User.cs", "// place to replace 2", @"[Test(type: typeof(int))]"));
 
-            var entries = await project.ExecuteTest();
+            var entries = await project.ExecutePropertiesTest();
 
             Assert.True(expectedEntries.SequenceEqual(entries!));
         }
