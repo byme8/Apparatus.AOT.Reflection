@@ -18,7 +18,7 @@ namespace Apparatus.AOT.Reflection.SourceGenerator
         
         public override void Initialize(AnalysisContext context)
         {
-            context.EnableConcurrentExecution();
+            //context.EnableConcurrentExecution();
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
             context.RegisterSyntaxNodeAction(Handle, SyntaxKind.InvocationExpression);
         }

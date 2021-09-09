@@ -18,7 +18,7 @@ namespace Apparatus.AOT.Reflection.Tests
         {
             var project = await TestProject.Project.ReplacePartOfDocumentAsync(
                 "Program.cs",
-                "var enumValues = userKind.GetEnumValueInfo();",
+                "var value = userKind.GetEnumValueInfo();",
                 "var enumValues = userKind.GetProperties();");
 
 
@@ -28,35 +28,71 @@ namespace Apparatus.AOT.Reflection.Tests
         [Fact]
         public async Task GetEnumValueInfoWorks()
         {
-            var expected = new EnumValueInfo("User", 0, new Attribute[0]);
+            var expected = new EnumValueInfo<UserKind>("User", UserKind.User, new Attribute[0]);
 
             var assembly = await TestProject.Project.CompileToRealAssembly();
 
-            var extension = assembly.GetType("Apparatus.AOT.Reflection.Apparatus_AOT_Reflection_Playground_UserKindExtensions");
+            var extension = assembly.GetType("Apparatus.AOT.Reflection.Playground.Program");
             Assert.NotNull(extension);
 
-            var method = extension.GetMethod("GetEnumValueInfo", BindingFlags.Static | BindingFlags.Public);
+            var method = extension
+                .GetMethod("GetEnumValueInfo", BindingFlags.Static | BindingFlags.Public)
+                .MakeGenericMethod(typeof(UserKind))
+                .CreateDelegate<Func<UserKind, IEnumValueInfo<UserKind>>>();
             Assert.NotNull(method);
 
-            var entry = (IEnumValueInfo)method.Invoke(null, new object[] { UserKind.User });
+            var entry = method.Invoke(UserKind.User);
             Assert.Equal(expected, entry);
         }
 
         [Fact]
         public async Task GetEnumValueInfoWorksWithAttributes()
         {
-            var expected = new EnumValueInfo("Admin", 1, new Attribute[] { new DescriptionAttribute("Admin user") });
+            var expected = new EnumValueInfo<UserKind>("Admin", UserKind.Admin, new Attribute[] { new DescriptionAttribute("Admin user") });
 
             var assembly = await TestProject.Project.CompileToRealAssembly();
 
-            var extension = assembly.GetType("Apparatus.AOT.Reflection.Apparatus_AOT_Reflection_Playground_UserKindExtensions");
+            var extension = assembly.GetType("Apparatus.AOT.Reflection.Playground.Program");
             Assert.NotNull(extension);
 
-            var method = extension.GetMethod("GetEnumValueInfo", BindingFlags.Static | BindingFlags.Public);
+            var method = extension
+                .GetMethod("GetEnumValueInfo", BindingFlags.Static | BindingFlags.Public)
+                .MakeGenericMethod(typeof(UserKind))
+                .CreateDelegate<Func<UserKind, IEnumValueInfo<UserKind>>>();
             Assert.NotNull(method);
 
-            var entry = (IEnumValueInfo)method.Invoke(null, new object[] { UserKind.Admin });
+            var entry = method.Invoke(UserKind.Admin);
             Assert.Equal(expected, entry);
+        }
+
+        [Fact]
+        public async Task GetEnumInfoWorks()
+        {
+            var expected = new[]
+            {
+                new EnumValueInfo<UserKind>("User", UserKind.User, new Attribute[0]),
+                new EnumValueInfo<UserKind>("Admin", UserKind.Admin, new Attribute[] { new DescriptionAttribute("Admin user") })
+            };
+            
+            var project = await TestProject.Project.ReplacePartOfDocumentAsync(
+                "Program.cs",
+                "var value = userKind.GetEnumValueInfo();",
+                "EnumHelper.GetEnumInfo<UserKind>();");
+            
+            var assembly = await project.CompileToRealAssembly();
+            
+            var extension = assembly.GetType("Apparatus.AOT.Reflection.Playground.Program");
+            Assert.NotNull(extension);
+            
+            var method = extension
+                .GetMethod("GetEnumInfo", BindingFlags.Static | BindingFlags.Public)
+                .MakeGenericMethod(typeof(UserKind))
+                .CreateDelegate<Func<IEnumerable<IEnumValueInfo<UserKind>>>>();
+            Assert.NotNull(method);
+
+            var entries = method.Invoke();
+            
+            Assert.True(expected.SequenceEqual(entries));
         }
     }
 }

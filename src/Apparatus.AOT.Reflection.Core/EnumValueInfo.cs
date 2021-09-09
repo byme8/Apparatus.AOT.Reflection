@@ -1,19 +1,22 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Apparatus.AOT.Reflection
 {
-    public interface IEnumValueInfo
+    public interface IEnumValueInfo<TEnum>
+        where TEnum : Enum
     {
         string Name { get; }
         Attribute[] Attributes { get; }
 
-        int Value { get; }
+        TEnum Value { get; }
     }
 
-    public class EnumValueInfo : IEnumValueInfo, IEquatable<EnumValueInfo>
+    public class EnumValueInfo<TEnum> : IEnumValueInfo<TEnum>, IEquatable<EnumValueInfo<TEnum>>
+        where TEnum : Enum
     {
-        public bool Equals(EnumValueInfo other)
+        public bool Equals(EnumValueInfo<TEnum> other)
         {
             if (ReferenceEquals(null, other))
             {
@@ -25,7 +28,9 @@ namespace Apparatus.AOT.Reflection
                 return true;
             }
 
-            return Name == other.Name && Value == other.Value && Attributes.SequenceEqual(other.Attributes);
+            return Name == other.Name && 
+                   EqualityComparer<TEnum>.Default.Equals(Value, other.Value) &&
+                   Attributes.SequenceEqual(other.Attributes);
         }
 
         public override bool Equals(object obj)
@@ -45,7 +50,7 @@ namespace Apparatus.AOT.Reflection
                 return false;
             }
 
-            return Equals((EnumValueInfo)obj);
+            return Equals((EnumValueInfo<TEnum>)obj);
         }
 
         public override int GetHashCode()
@@ -53,23 +58,23 @@ namespace Apparatus.AOT.Reflection
             unchecked
             {
                 var hashCode = (Name != null ? Name.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ Value;
+                hashCode = (hashCode * 397) ^ Value.GetHashCode();
                 hashCode = (hashCode * 397) ^ (Attributes != null ? Attributes.GetHashCode() : 0);
                 return hashCode;
             }
         }
 
-        public static bool operator ==(EnumValueInfo left, EnumValueInfo right)
+        public static bool operator ==(EnumValueInfo<TEnum> left, EnumValueInfo<TEnum> right)
         {
             return Equals(left, right);
         }
 
-        public static bool operator !=(EnumValueInfo left, EnumValueInfo right)
+        public static bool operator !=(EnumValueInfo<TEnum> left, EnumValueInfo<TEnum> right)
         {
             return !Equals(left, right);
         }
 
-        public EnumValueInfo(string name, int value, Attribute[] attributes)
+        public EnumValueInfo(string name, TEnum value, Attribute[] attributes)
         {
             Name = name;
             Attributes = attributes;
@@ -77,7 +82,7 @@ namespace Apparatus.AOT.Reflection
         }
 
         public string Name { get; }
-        public int Value { get; }
+        public TEnum Value { get; }
         public Attribute[] Attributes { get; }
     }
 }

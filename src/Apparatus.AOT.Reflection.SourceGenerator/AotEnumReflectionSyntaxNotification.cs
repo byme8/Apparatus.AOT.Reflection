@@ -7,21 +7,15 @@ namespace Apparatus.AOT.Reflection.SourceGenerator
 {
     public class AotEnumReflectionSyntaxNotification : ISyntaxReceiver
     {
-        private static HashSet<String> MethodsNames = new HashSet<string>
-        {
-            "GetEnumValueInfo", 
-            "GetEnumInfo"
-        };
-
         public List<MemberAccessExpressionSyntax> MemberAccess { get; } = new List<MemberAccessExpressionSyntax>();
 
         public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
         {
             if (syntaxNode is InvocationExpressionSyntax invocation &&
                 invocation.Expression is MemberAccessExpressionSyntax memberAccess &&
-                (MethodsNames.Contains(memberAccess.Name.ToString()) ||
+                (memberAccess.Name.ToString() == "GetEnumValueInfo" ||
                  memberAccess.Name is GenericNameSyntax genericNameSyntax &&
-                 genericNameSyntax.Identifier.ToString() == "Bootstrap"))
+                 genericNameSyntax.Identifier.ToString() == "GetEnumInfo"))
             {
                 MemberAccess.Add(memberAccess);
             }

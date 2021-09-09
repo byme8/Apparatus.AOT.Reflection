@@ -7,10 +7,11 @@ namespace Apparatus.AOT.Reflection
     {
         public static Lazy<IReadOnlyDictionary<string, IPropertyInfo>> Data { get; set; }
     }
-    
+
     public static class EnumMetadataStore<T>
+        where T : Enum
     {
-        public static Lazy<IReadOnlyDictionary<int, IEnumValueInfo>> Data { get; set; }
+        public static Lazy<IReadOnlyDictionary<T, IEnumValueInfo<T>>> Data { get; set; }
     }
 
     public static class GenericHelper
@@ -22,8 +23,8 @@ namespace Apparatus.AOT.Reflection
 
     public static class EnumHelper
     {
-        public static IEnumerable<IEnumValueInfo> GetEnumInfo<TEnum>()
-            where TEnum: Enum
+        public static IEnumerable<IEnumValueInfo<TEnum>> GetEnumInfo<TEnum>()
+            where TEnum : Enum
         {
             var data = EnumMetadataStore<TEnum>.Data;
             if (data is null)
@@ -32,7 +33,7 @@ namespace Apparatus.AOT.Reflection
                     $"Type '{typeof(TEnum).FullName}' is not registered. Use 'Apparatus.AOT.Reflection.GenericHelper.Bootstrap' to bootstrap it.");
                 return null;
             }
-            
+
             return data.Value.Values;
         }
     }
@@ -51,9 +52,9 @@ namespace Apparatus.AOT.Reflection
 
             return data.Value;
         }
-        
-        public static IEnumValueInfo GetEnumValueInfo<TEnum>(this TEnum value)
-            where TEnum: Enum 
+
+        public static IEnumValueInfo<TEnum> GetEnumValueInfo<TEnum>(this TEnum value)
+            where TEnum : Enum
         {
             var data = EnumMetadataStore<TEnum>.Data;
             if (data is null)
@@ -63,8 +64,7 @@ namespace Apparatus.AOT.Reflection
                 return null;
             }
 
-            var hashCode = EqualityComparer<TEnum>.Default.GetHashCode(value);
-            return data.Value[hashCode];
+            return data.Value[value];
         }
     }
 }

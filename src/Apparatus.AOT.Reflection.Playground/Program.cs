@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Apparatus.AOT.Reflection.Playground
 {
     // place to replace 0
 
-    internal static class Program
+    public static class Program
     {
         private static void Main(string[] args)
         {
@@ -28,6 +29,18 @@ namespace Apparatus.AOT.Reflection.Playground
         public static IReadOnlyDictionary<string, IPropertyInfo> GetInfo<T>(T value)
         {
             return value.GetProperties();
+        }
+        
+        public static IEnumValueInfo<TEnum> GetEnumValueInfo<TEnum>(TEnum value)
+            where TEnum : Enum
+        {
+            return value.GetEnumValueInfo();
+        }
+        
+        public static IEnumerable<IEnumValueInfo<TEnum>> GetEnumInfo<TEnum>()
+            where TEnum : Enum
+        {
+            return EnumHelper.GetEnumInfo<TEnum>();
         }
     }
 }

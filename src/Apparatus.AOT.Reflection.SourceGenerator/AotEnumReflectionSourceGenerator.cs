@@ -20,6 +20,11 @@ namespace Apparatus.AOT.Reflection.SourceGenerator
                 return;
             }
 
+            if (!receiver.MemberAccess.Any())
+            {
+                return;
+            }
+            
             var extensionType = context.Compilation
                 .GetTypeByMetadataName("Apparatus.AOT.Reflection.AOTReflectionExtensions");
             var extensionMethod = extensionType
@@ -50,7 +55,7 @@ namespace Apparatus.AOT.Reflection.SourceGenerator
                 }
 
                 if (!SymbolEqualityComparer.Default.Equals(extensionMethod, methodSymbol.ReducedFrom) &&
-                    !SymbolEqualityComparer.Default.Equals(enumHelperMethod, methodSymbol.ReducedFrom))
+                    !SymbolEqualityComparer.Default.Equals(enumHelperMethod, methodSymbol.ConstructedFrom))
                 {
                     continue;
                 }
@@ -105,13 +110,13 @@ namespace Apparatus.AOT.Reflection
             EnumMetadataStore<{typeToBake.ToGlobalName()}>.Data = _lazy;
         }}
 
-        private static global::System.Lazy<global::System.Collections.Generic.IReadOnlyDictionary<int, IEnumValueInfo>> _lazy = new global::System.Lazy<global::System.Collections.Generic.IReadOnlyDictionary<int, IEnumValueInfo>>(new global::System.Collections.Generic.Dictionary<int, IEnumValueInfo>
+        private static global::System.Lazy<global::System.Collections.Generic.IReadOnlyDictionary<{typeToBake.ToGlobalName()}, IEnumValueInfo<{typeToBake.ToGlobalName()}>>> _lazy = new global::System.Lazy<global::System.Collections.Generic.IReadOnlyDictionary<{typeToBake.ToGlobalName()}, IEnumValueInfo<{typeToBake.ToGlobalName()}>>>(new global::System.Collections.Generic.Dictionary<{typeToBake.ToGlobalName()}, IEnumValueInfo<{typeToBake.ToGlobalName()}>>
         {{
 {typeToBake
     .GetMembers()
     .OfType<IFieldSymbol>()
     .Select(o => 
-$@"         {{ {o.ConstantValue}, new EnumValueInfo(""{o.Name}"", {o.ConstantValue}, new Attribute[] 
+$@"         {{ {typeToBake.ToGlobalName()}.{o.Name}, new EnumValueInfo<{typeToBake.ToGlobalName()}>(""{o.Name}"", {typeToBake.ToGlobalName()}.{o.Name}, new Attribute[] 
                 {{ 
                     {o.GetAttributes().GenerateAttributes()}
                 }})
@@ -119,12 +124,6 @@ $@"         {{ {o.ConstantValue}, new EnumValueInfo(""{o.Name}"", {o.ConstantVal
     .JoinWithNewLine()
 }
         }}); 
-
-
-        public static IEnumValueInfo GetEnumValueInfo(this {typeToBake.ToGlobalName()} value)
-        {{
-            return _lazy.Value[(int)value];
-        }}   
     }}
 }}
 ";
