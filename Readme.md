@@ -21,6 +21,8 @@ public class User
     public string LastName { get; set; }
 }
 
+// ...
+
 public static void Main()
 {
     var user = new User();
@@ -37,6 +39,35 @@ This sample will print the names of properties.
 FirstName
 LastName
 ```
+
+Also it works for enums too:
+``` cs 
+
+public enum UserKind 
+{
+    User,
+    Admin
+}
+
+// ...
+
+public static void Main()
+{
+    var values = EnumHelper.GetEnumInfo<UserKind>();
+    foreach (var value in values)
+    {
+        Console.WriteLine(value.Name);
+    }
+}
+
+```
+
+You will see:
+```
+User
+Admin
+```
+
 
 # Performance
 
