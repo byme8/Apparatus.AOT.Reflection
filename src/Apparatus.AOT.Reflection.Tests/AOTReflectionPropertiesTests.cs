@@ -203,5 +203,28 @@ namespace Apparatus.AOT.Reflection.Tests
 
             Assert.NotNull(properties);
         }
+        
+        [Fact]
+        public async Task PrivateClassesHandledProperly()
+        {
+            var project = await TestProject.Project
+                .ReplacePartOfDocumentAsync("Program.cs",
+                    ("// place to replace 0", "class PrivateUser { public string FirstName { get; set; } }"),
+                    ("var user = new User();", "var user = new PrivateUser();"),
+                    ("// place to replace 1", " var attributes = user.GetProperties();"));
+
+            var assembly = await project.CompileToRealAssembly();
+
+            var privateUser = assembly.GetType("Apparatus.AOT.Reflection.Playground.PrivateUser");
+            var methodInfo = assembly
+                .GetType("Apparatus.AOT.Reflection.Playground.Program")!
+                .GetMethod("GetInfo", BindingFlags.Static | BindingFlags.Public)
+                .MakeGenericMethod(privateUser);
+
+            var properties = methodInfo
+                .Invoke(null, new []{Activator.CreateInstance(privateUser)}) as IReadOnlyDictionary<string, IPropertyInfo>;
+
+            Assert.NotNull(properties);
+        }
     }
 }

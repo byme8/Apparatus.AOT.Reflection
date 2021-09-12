@@ -134,7 +134,7 @@ namespace Apparatus.AOT.Reflection
         }}); 
 
 
-        public static global::System.Collections.Generic.IReadOnlyDictionary<string, IPropertyInfo> GetProperties(this {typeToBake.ToGlobalName()} value)
+        {GetVisibility(typeToBake)} static global::System.Collections.Generic.IReadOnlyDictionary<string, IPropertyInfo> GetProperties(this {typeToBake.ToGlobalName()} value)
         {{
             return _lazy.Value;
         }}   
@@ -142,6 +142,19 @@ namespace Apparatus.AOT.Reflection
 }}
 ";
             return source;
+        }
+
+        private string GetVisibility(ITypeSymbol typeToBake)
+        {
+            switch (typeToBake.DeclaredAccessibility)
+            {
+                case Accessibility.Public:
+                    return "public";
+                case Accessibility.Internal:
+                    return "internal";
+                default:
+                    return "private";
+            }
         }
 
         public void Initialize(GeneratorInitializationContext context)

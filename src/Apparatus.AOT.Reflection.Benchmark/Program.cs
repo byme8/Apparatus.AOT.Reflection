@@ -48,9 +48,6 @@ namespace Apparatus.AOT.Reflection.Benchmark
     {
         public static void Main()
         {
-            // new PropertiesBenchmark().Reflection();
-            // new PropertiesBenchmark().AttributeExtractor();
-
             BenchmarkRunner.Run<EnumBenchmark>();
         }
     }
