@@ -64,6 +64,26 @@ namespace Apparatus.AOT.Reflection.Tests
             var entry = method.Invoke(UserKind.Admin);
             Assert.Equal(expected, entry);
         }
+        
+        [Fact]
+        public async Task PrivateEnumHandledProperly()
+        {
+            var expected = new EnumValueInfo<UserKind>("Admin", UserKind.Admin, new Attribute[] { new DescriptionAttribute("Admin user") });
+
+            var assembly = await TestProject.Project.CompileToRealAssembly();
+
+            var extension = assembly.GetType("Apparatus.AOT.Reflection.Playground.Program");
+            Assert.NotNull(extension);
+
+            var method = extension
+                .GetMethod("GetEnumValueInfo", BindingFlags.Static | BindingFlags.Public)
+                .MakeGenericMethod(typeof(UserKind))
+                .CreateDelegate<Func<UserKind, IEnumValueInfo<UserKind>>>();
+            Assert.NotNull(method);
+
+            var entry = method.Invoke(UserKind.Admin);
+            Assert.Equal(expected, entry);
+        }
 
         [Fact]
         public async Task GetEnumInfoWorks()
