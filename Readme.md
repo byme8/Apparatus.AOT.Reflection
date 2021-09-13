@@ -66,7 +66,9 @@ User
 Admin
 ```
 
-It does not end with the only property names. You can get property values and assigned attributes. Here is an example:
+It does not end with the only property names. You can get property values and assigned attributes. 
+
+Here is an example:
 
 ``` cs
 var requiredProperties = _user
