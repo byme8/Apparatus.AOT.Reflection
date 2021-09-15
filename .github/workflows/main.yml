@@ -22,7 +22,7 @@ jobs:
     - name: Build
       run: dotnet build --no-restore -c release ./
     - name: Test
-      run: dotnet test --no-build --verbosity normal -c release ./
+      run: dotnet test --no-build --verbosity normal -c release ./src/Apparatus.AOT.Reflection.Tests/
     - name: Publish AOT.Reflection NuGet
       uses: brandedoutcast/publish-nuget@v2.5.5
       with:
