@@ -7,6 +7,7 @@ namespace Apparatus.AOT.Reflection
     {
         string Name { get; }
         Attribute[] Attributes { get; }
+        Type PropertyType { get; }
 
         bool TryGetValue(object instance, out object value);
         bool TrySetValue(object instance, object value);
@@ -85,12 +86,14 @@ namespace Apparatus.AOT.Reflection
         {
             Name = name;
             Attributes = attributes;
+            PropertyType = typeof(TPropertyType);
             _getGetValue = getGetValue;
             _setGetValue = setGetValue;
         }
 
         public string Name { get; }
         public Attribute[] Attributes { get; }
+        public Type PropertyType { get; }
 
 
         public bool TryGetValue(object instance, out object value)
