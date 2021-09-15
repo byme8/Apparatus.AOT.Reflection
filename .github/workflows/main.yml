@@ -18,11 +18,11 @@ jobs:
       with:
         dotnet-version: 5.0.x
     - name: Restore dependencies
-      run: dotnet restore ./src
+      run: dotnet restore ./
     - name: Build
-      run: dotnet build --no-restore -c release ./src
+      run: dotnet build --no-restore -c release ./
     - name: Test
-      run: dotnet test --no-build --verbosity normal -c release ./src
+      run: dotnet test --no-build --verbosity normal -c release ./
     - name: Publish AOT.Reflection NuGet
       uses: brandedoutcast/publish-nuget@v2.5.5
       with:
