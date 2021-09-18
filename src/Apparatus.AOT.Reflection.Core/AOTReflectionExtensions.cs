@@ -40,18 +40,8 @@ namespace Apparatus.AOT.Reflection
 
     public static class AOTReflectionExtensions
     {
-        public static IReadOnlyDictionary<string, IPropertyInfo> GetProperties<TValue>(this TValue value)
-        {
-            var data = MetadataStore<TValue>.Data;
-            if (data is null)
-            {
-                throw new InvalidOperationException(
-                    $"Type '{typeof(TValue).FullName}' is not registered. Use 'Apparatus.AOT.Reflection.GenericHelper.Bootstrap' or extension 'GetProperties' to bootstrap it.");
-                return null;
-            }
-
-            return data.Value;
-        }
+        public static IReadOnlyDictionary<string, IPropertyInfo> GetProperties<TValue>(this TValue value) =>
+            AOTReflection.GetProperties<TValue>();
 
         public static IEnumValueInfo<TEnum> GetEnumValueInfo<TEnum>(this TEnum value)
             where TEnum : Enum
@@ -66,5 +56,22 @@ namespace Apparatus.AOT.Reflection
 
             return data.Value[value];
         }
+    }
+
+    public static class AOTReflection 
+    {
+        public static IReadOnlyDictionary<string, IPropertyInfo> GetProperties<TValue>()
+        {
+            var data = MetadataStore<TValue>.Data;
+            if (data is null)
+            {
+                throw new InvalidOperationException(
+                    $"Type '{typeof(TValue).FullName}' is not registered. Use 'Apparatus.AOT.Reflection.GenericHelper.Bootstrap' or extension 'GetProperties' to bootstrap it.");
+                return null;
+            }
+
+            return data.Value;
+        }
+
     }
 }
