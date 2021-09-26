@@ -78,6 +78,7 @@ namespace Apparatus.AOT.Reflection.Tests.Utils
                     new AOTReflectionAnalyzer(),
                     new IndexPropertyAnalyzer(),
                     new MethodPropertyAnalyzer(),
+                    new DontUseKeyOfConstructorAnalyzer(),
                 }))
                 .GetAllDiagnosticsAsync();
 

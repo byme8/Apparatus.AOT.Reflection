@@ -7,6 +7,8 @@ namespace Apparatus.AOT.Reflection.Playground
 
     public static class Program
     {
+        // place to replace properties
+
         private static void Main(string[] args)
         {
             var user = new User();
@@ -30,13 +32,13 @@ namespace Apparatus.AOT.Reflection.Playground
         {
             return value.GetProperties();
         }
-        
+
         public static IEnumValueInfo<TEnum> GetEnumValueInfo<TEnum>(TEnum value)
             where TEnum : Enum
         {
             return value.GetEnumValueInfo();
         }
-        
+
         public static IEnumerable<IEnumValueInfo<TEnum>> GetEnumInfo<TEnum>()
             where TEnum : Enum
         {

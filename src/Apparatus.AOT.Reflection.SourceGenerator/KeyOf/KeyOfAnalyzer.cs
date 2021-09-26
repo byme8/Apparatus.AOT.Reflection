@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -15,7 +16,7 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.KeyOf
         {
             var keyOfs = parameters
                 .Select((o, i) => (Index: i, Type: (INamedTypeSymbol)o.Type))
-                .Where(o => o.Type.ConstructedFrom.ToString().StartsWith("Apparatus.AOT.Reflection.KeyOf<"))
+                .Where(o => IsKeyOf(o.Type))
                 .ToArray();
 
             if (!keyOfs.Any())
@@ -40,7 +41,7 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.KeyOf
                         {
                             return (Index: i, memberAccess.Name, Value: memberAccess.Name.Identifier.Text);
                         }
-                        
+
                         if (expression is IdentifierNameSyntax nameSyntax)
                         {
                             return (Index: i, nameSyntax, Value: nameSyntax.Identifier.Text);
@@ -58,17 +59,38 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.KeyOf
                         return (Index: i, o.Expression, Value: localSymbol.ConstantValue.ToString());
                     }
 
-                    return (Index: i, null, null);
+                    if (possibleConstant.Symbol is IFieldSymbol fieldSymbol && fieldSymbol.HasConstantValue)
+                    {
+                        return (Index: i, o.Expression, Value: fieldSymbol.ConstantValue.ToString());
+                    }
+
+                    return (Index: i, o.Expression, null);
                 })
-                .Where(o => o.Expression != null)
                 .ToArray();
 
             foreach (var keyOf in keyOfs)
             {
                 var (index, type) = keyOf;
                 var propertyNameLiteral = valuesAsText.FirstOrDefault(o => o.Index == index);
-                if (propertyNameLiteral == default)
+
+                if (propertyNameLiteral.Value == default)
                 {
+                    var propertySymbol = context.SemanticModel
+                        .GetSpeculativeSymbolInfo(
+                            propertyNameLiteral.Expression.SpanStart,
+                            propertyNameLiteral.Expression,
+                            SpeculativeBindingOption.BindAsExpression);
+
+                    if (propertySymbol.Symbol is ILocalSymbol localSymbol &&
+                        IsKeyOf(localSymbol.Type as INamedTypeSymbol))
+                    {
+                        continue;
+                    }
+
+                    context.ReportDiagnostic(
+                        Diagnostic.Create(
+                            DiagnosticDescriptors.ImpossibleToGetThePropertyName,
+                            propertyNameLiteral.Expression.GetLocation()));
                     continue;
                 }
 
@@ -90,5 +112,11 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.KeyOf
                 }
             }
         }
+
+        public static bool IsKeyOf(INamedTypeSymbol type)
+            => type.ConstructedFrom.ToString().StartsWith("Apparatus.AOT.Reflection.KeyOf<");
+
+        public static string Version { get; } = typeof(KeyOfAnalyzer).Assembly.GetName().Version.ToString();
+        public static string CodeGenerationAttribute { get; } = $@"[System.CodeDom.Compiler.GeneratedCode(""AOT.Reflection"", ""{Version}"")]";
     }
 }

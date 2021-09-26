@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Text;
 
 namespace Apparatus.AOT.Reflection.SourceGenerator
 {
@@ -24,21 +22,6 @@ namespace Apparatus.AOT.Reflection.SourceGenerator
             foreach (var member in symbol.GetMembers())
             {
                 yield return member;
-            }
-        }
-
-        public static ITypeSymbol GetTypeSymbol(this SymbolInfo info)
-        {
-            switch (info.Symbol)
-            {
-                case ITypeSymbol type:
-                    return type;
-                case ILocalSymbol local:
-                    return local.Type;
-                case IParameterSymbol parameterSymbol:
-                    return parameterSymbol.Type;
-                default:
-                    return null;
             }
         }
 
@@ -76,16 +59,6 @@ namespace Apparatus.AOT.Reflection.SourceGenerator
             return $@"{pair.Value.ToCSharpString()}";
         }
 
-        public static string GetUniqueName(this ITypeSymbol type)
-        {
-            return $"{type.Name}_{Guid.NewGuid().ToString().Replace("-", "")}";
-        }
-
-        public static SourceText ToSourceText(this string source)
-        {
-            return SourceText.From(source, Encoding.UTF8);
-        }
-
         public static string ToGlobalName(this ISymbol symbol)
         {
             return symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
@@ -99,11 +72,6 @@ namespace Apparatus.AOT.Reflection.SourceGenerator
         public static string Join(this IEnumerable<string> values, string separator = ", ")
         {
             return string.Join(separator, values);
-        }
-
-        public static string Wrap(this string text, string left = "", string right = "")
-        {
-            return $"{left}{text}{right}";
         }
 
         public static string JoinWithNewLine(this IEnumerable<string> values, string separator = "")

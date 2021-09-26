@@ -36,6 +36,8 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.KeyOf
         }
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; }
-            = ImmutableArray.Create(DiagnosticDescriptors.TypeDoesntContainsPropertyWithSuchName);
+            = ImmutableArray.Create(
+                DiagnosticDescriptors.TypeDoesntContainsPropertyWithSuchName, 
+                DiagnosticDescriptors.ImpossibleToGetThePropertyName);
     }
 }

@@ -18,7 +18,7 @@ namespace Apparatus.AOT.Reflection.Tests
 
             var assembly = await project.CompileToRealAssembly();
         }
-        
+
         [Fact]
         public async Task FailedWithWrongProperty()
         {
@@ -28,7 +28,7 @@ namespace Apparatus.AOT.Reflection.Tests
 
             await Assert.ThrowsAsync<Exception>(async () => await project.CompileToRealAssembly());
         }
-        
+
         [Fact]
         public async Task WorkWithCorrectNameOf()
         {
@@ -38,7 +38,7 @@ namespace Apparatus.AOT.Reflection.Tests
 
             await project.CompileToRealAssembly();
         }
-        
+
         [Fact]
         public async Task FailedWithWrongNameOf()
         {
@@ -48,7 +48,7 @@ namespace Apparatus.AOT.Reflection.Tests
 
             await Assert.ThrowsAsync<Exception>(async () => await project.CompileToRealAssembly());
         }
-        
+
         [Fact]
         public async Task FailedWithWrongConstantOf()
         {
@@ -61,7 +61,7 @@ namespace Apparatus.AOT.Reflection.Tests
 
             await Assert.ThrowsAsync<Exception>(async () => await project.CompileToRealAssembly());
         }
-        
+
         [Fact]
         public async Task FailedWithWrongPropertyNameInMethodCall()
         {
@@ -78,7 +78,7 @@ namespace Apparatus.AOT.Reflection.Tests
 
             await Assert.ThrowsAsync<Exception>(async () => await project.CompileToRealAssembly());
         }
-        
+
         [Fact]
         public async Task FailedWithWrongConstInMethodCall()
         {
@@ -96,7 +96,7 @@ namespace Apparatus.AOT.Reflection.Tests
 
             await Assert.ThrowsAsync<Exception>(async () => await project.CompileToRealAssembly());
         }
-        
+
         [Fact]
         public async Task FailedWithWrongNameofInMethodCall()
         {
@@ -113,7 +113,7 @@ namespace Apparatus.AOT.Reflection.Tests
 
             await Assert.ThrowsAsync<Exception>(async () => await project.CompileToRealAssembly());
         }
-        
+
         [Fact]
         public async Task FailedWithWrongShortNameofInMethodCall()
         {
@@ -127,6 +127,56 @@ namespace Apparatus.AOT.Reflection.Tests
                             return value.GetProperties()[property];
                         }
                     ");
+
+            await Assert.ThrowsAsync<Exception>(async () => await project.CompileToRealAssembly());
+        }
+
+        [Fact]
+        public async Task FailedBecausePropertyNameIsVariable()
+        {
+            var project = await TestProject.Project
+                .ReplacePartOfDocumentAsync("Program.cs", "// place to replace 1",
+                    @"
+                        var a = ""FirstName"";
+                        var aa = user.GetProperties()[a];
+                    ");
+
+            await Assert.ThrowsAsync<Exception>(async () => await project.CompileToRealAssembly());
+        }
+        
+        [Fact]
+        public async Task WorksBecauseKeyOfSupplied()
+        {
+            var project = await TestProject.Project
+                .ReplacePartOfDocumentAsync("Program.cs", "// place to replace 1",
+                    @"
+                        var (propertyKey, success) = KeyOf<User>.Parse(""FirstName"");
+                        var userProperty = user.GetProperties()[propertyKey];
+                    ");
+
+            await project.CompileToRealAssembly();
+        }
+        
+        [Fact]
+        public async Task WorksWithNonLocalConstants()
+        {
+            var project = await TestProject.Project
+                .ReplacePartOfDocumentAsync(
+                    "Program.cs",
+                    ("// place to replace 1", @"var userProperty = user.GetProperties()[Name];"),
+                    ("// place to replace properties", @"public const string Name = ""FirstName"";"));
+
+            await project.CompileToRealAssembly();
+        }
+        
+        [Fact]
+        public async Task DontUseKeyOfConstructor()
+        {
+            var project = await TestProject.Project
+                .ReplacePartOfDocumentAsync(
+                    "Program.cs",
+                    "// place to replace 1",
+                    @"var keyof = new KeyOf<User>(""FirstName"");");
 
             await Assert.ThrowsAsync<Exception>(async () => await project.CompileToRealAssembly());
         }

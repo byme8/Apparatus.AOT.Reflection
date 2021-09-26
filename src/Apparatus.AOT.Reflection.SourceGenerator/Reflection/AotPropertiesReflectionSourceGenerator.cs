@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Apparatus.AOT.Reflection.SourceGenerator.KeyOf;
 using Microsoft.CodeAnalysis;
 
 namespace Apparatus.AOT.Reflection.SourceGenerator.Reflection
@@ -102,14 +103,13 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.Reflection
                 })
                 .ToArray();
 
-            var version = typeof(AotPropertiesReflectionSourceGenerator).Assembly.GetName().Version.ToString();
             var source = $@"
 using System;
 using System.Linq;
 
 namespace Apparatus.AOT.Reflection
 {{
-    [System.CodeDom.Compiler.GeneratedCode(""AOT.Reflection"", ""{version}"")]
+    {KeyOfAnalyzer.CodeGenerationAttribute}
     public static class {typeToBake.ToFileName()}
     {{
         [global::System.Runtime.CompilerServices.ModuleInitializer]
@@ -121,7 +121,7 @@ namespace Apparatus.AOT.Reflection
         private static global::System.Lazy<global::System.Collections.Generic.IReadOnlyDictionary<KeyOf<{typeToBake.ToGlobalName()}>, IPropertyInfo>> _lazy = new global::System.Lazy<global::System.Collections.Generic.IReadOnlyDictionary<KeyOf<{typeToBake.ToGlobalName()}>, IPropertyInfo>>(new global::System.Collections.Generic.Dictionary<KeyOf<{typeToBake.ToGlobalName()}>, IPropertyInfo>
         {{
 {propertyAndAttributes.Select(o =>
-        $@"            {{ KeyOf<{typeToBake.ToGlobalName()}>.Parse(""{o.Name}""), new global::Apparatus.AOT.Reflection.PropertyInfo<{typeToBake.ToGlobalName()},{o.Type.ToGlobalName()}>(
+        $@"            {{ new KeyOf<{typeToBake.ToGlobalName()}>(""{o.Name}""), new global::Apparatus.AOT.Reflection.PropertyInfo<{typeToBake.ToGlobalName()},{o.Type.ToGlobalName()}>(
                         ""{o.Name}"", 
                         new global::System.Attribute[] 
                         {{

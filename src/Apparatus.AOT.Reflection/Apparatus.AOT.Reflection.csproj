@@ -9,7 +9,6 @@
 
   <PropertyGroup>
     <PackageId>Apparatus.AOT.Reflection</PackageId>
-    <PackageVersion>0.3.0.0</PackageVersion>
     <Authors>byme</Authors>
     <PackageProjectUrl>https://github.com/byme8/Apparatus.AOT.Reflection</PackageProjectUrl>
     <RepositoryUrl>https://github.com/byme8/Apparatus.AOT.Reflection</RepositoryUrl>

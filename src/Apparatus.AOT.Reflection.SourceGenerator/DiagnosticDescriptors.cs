@@ -21,5 +21,23 @@ namespace Apparatus.AOT.Reflection.SourceGenerator
             DiagnosticSeverity.Error,
             true
         );
+        
+        public static readonly DiagnosticDescriptor ImpossibleToGetThePropertyName = new DiagnosticDescriptor(
+            "KEYOF_002",
+            "It is impossible to validate the property name", 
+            "Use KeyOf<T>.Parse to get KeyOf<T> instance", 
+            "KeyOf",
+            DiagnosticSeverity.Error,
+            true
+        );
+        
+        public static readonly DiagnosticDescriptor DontUseKeyOfConstructor = new DiagnosticDescriptor(
+            "KEYOF_003",
+            "Don't use new KeyOf<T>(...) syntax", 
+            "Use KeyOf<T>.Parse to get KeyOf<T> instance", 
+            "KeyOf",
+            DiagnosticSeverity.Error,
+            true
+        );
     }
 }
