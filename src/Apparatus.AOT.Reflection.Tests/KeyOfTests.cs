@@ -28,5 +28,38 @@ namespace Apparatus.AOT.Reflection.Tests
 
             await Assert.ThrowsAsync<Exception>(async () => await project.CompileToRealAssembly());
         }
+        
+        [Fact]
+        public async Task WorkWithCorrectNameOf()
+        {
+            var project = await TestProject.Project
+                .ReplacePartOfDocumentAsync("Program.cs", "// place to replace 1",
+                    @"var property = new User().GetProperties()[nameof(User.FirstName)];");
+
+            await project.CompileToRealAssembly();
+        }
+        
+        [Fact]
+        public async Task FailedWithWrongNameOf()
+        {
+            var project = await TestProject.Project
+                .ReplacePartOfDocumentAsync("Program.cs", "// place to replace 1",
+                    @"var property = new User().GetProperties()[nameof(Program.DontCall)];");
+
+            await Assert.ThrowsAsync<Exception>(async () => await project.CompileToRealAssembly());
+        }
+        
+        [Fact]
+        public async Task FailedWithWrongConstantOf()
+        {
+            var project = await TestProject.Project
+                .ReplacePartOfDocumentAsync("Program.cs", "// place to replace 1",
+                    @"
+                        const string propertyName = ""Test"";
+                        var property = new User().GetProperties()[propertyName];
+                    ");
+
+            await Assert.ThrowsAsync<Exception>(async () => await project.CompileToRealAssembly());
+        }
     }
 }
