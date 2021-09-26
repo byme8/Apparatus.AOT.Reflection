@@ -73,7 +73,12 @@ namespace Apparatus.AOT.Reflection.Tests.Utils
         {
             var compilation = await project.GetCompilationAsync();
             var analyzerResults = await compilation
-                .WithAnalyzers(ImmutableArray.Create(new DiagnosticAnalyzer[] { new AOTReflectionAnalyzer(), new IndexPropertyAnalyzer(), }))
+                .WithAnalyzers(ImmutableArray.Create(new DiagnosticAnalyzer[]
+                {
+                    new AOTReflectionAnalyzer(),
+                    new IndexPropertyAnalyzer(),
+                    new MethodPropertyAnalyzer(),
+                }))
                 .GetAllDiagnosticsAsync();
 
             var error = compilation.GetDiagnostics().Concat(analyzerResults)

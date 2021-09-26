@@ -61,5 +61,74 @@ namespace Apparatus.AOT.Reflection.Tests
 
             await Assert.ThrowsAsync<Exception>(async () => await project.CompileToRealAssembly());
         }
+        
+        [Fact]
+        public async Task FailedWithWrongPropertyNameInMethodCall()
+        {
+            var project = await TestProject.Project
+                .ReplacePartOfDocumentAsync("Program.cs", "// place to replace 1",
+                    @"
+                        GetIt(user, ""Test"");
+                        
+                        IPropertyInfo GetIt<T>(T value, KeyOf<T> property)
+                        {
+                            return value.GetProperties()[property];
+                        }
+                    ");
+
+            await Assert.ThrowsAsync<Exception>(async () => await project.CompileToRealAssembly());
+        }
+        
+        [Fact]
+        public async Task FailedWithWrongConstInMethodCall()
+        {
+            var project = await TestProject.Project
+                .ReplacePartOfDocumentAsync("Program.cs", "// place to replace 1",
+                    @"
+                        const string Name = ""Test"";
+                        GetIt(user, Name);
+                        
+                        IPropertyInfo GetIt<T>(T value, KeyOf<T> property)
+                        {
+                            return value.GetProperties()[property];
+                        }
+                    ");
+
+            await Assert.ThrowsAsync<Exception>(async () => await project.CompileToRealAssembly());
+        }
+        
+        [Fact]
+        public async Task FailedWithWrongNameofInMethodCall()
+        {
+            var project = await TestProject.Project
+                .ReplacePartOfDocumentAsync("Program.cs", "// place to replace 1",
+                    @"
+                        GetIt(user, nameof(Program.DontCall));
+                        
+                        IPropertyInfo GetIt<T>(T value, KeyOf<T> property)
+                        {
+                            return value.GetProperties()[property];
+                        }
+                    ");
+
+            await Assert.ThrowsAsync<Exception>(async () => await project.CompileToRealAssembly());
+        }
+        
+        [Fact]
+        public async Task FailedWithWrongShortNameofInMethodCall()
+        {
+            var project = await TestProject.Project
+                .ReplacePartOfDocumentAsync("Program.cs", "// place to replace 1",
+                    @"
+                        GetIt(user, nameof(Program));
+                        
+                        IPropertyInfo GetIt<T>(T value, KeyOf<T> property)
+                        {
+                            return value.GetProperties()[property];
+                        }
+                    ");
+
+            await Assert.ThrowsAsync<Exception>(async () => await project.CompileToRealAssembly());
+        }
     }
 }
