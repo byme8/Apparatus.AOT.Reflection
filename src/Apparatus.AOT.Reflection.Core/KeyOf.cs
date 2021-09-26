@@ -66,15 +66,17 @@ namespace Apparatus.AOT.Reflection
             return new KeyOf<T>(property);
         }
 
-        public static (KeyOf<T> Value, bool Success) Parse(string property)
+        public static bool TryParse(string property, out KeyOf<T> key)
         {
             var maybeKeyOf = new KeyOf<T>(property);
             if (MetadataStore<T>.Data.Value.ContainsKey(maybeKeyOf))
             {
-                return (maybeKeyOf, true);
+                key = maybeKeyOf;
+                return true;
             }
 
-            return (null, false);
+            key = null;
+            return false;
         }
     }
 }

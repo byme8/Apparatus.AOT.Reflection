@@ -15,6 +15,7 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.KeyOf
             IEnumerable<ArgumentSyntax> arguments)
         {
             var keyOfs = parameters
+                .Where(o => o.RefKind != RefKind.Out)
                 .Select((o, i) => (Index: i, Type: (INamedTypeSymbol)o.Type))
                 .Where(o => IsKeyOf(o.Type))
                 .ToArray();

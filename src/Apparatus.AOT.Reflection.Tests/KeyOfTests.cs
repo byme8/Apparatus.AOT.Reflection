@@ -150,7 +150,7 @@ namespace Apparatus.AOT.Reflection.Tests
             var project = await TestProject.Project
                 .ReplacePartOfDocumentAsync("Program.cs", "// place to replace 1",
                     @"
-                        var (propertyKey, success) = KeyOf<User>.Parse(""FirstName"");
+                        KeyOf<User>.TryParse(""FirstName"", out var propertyKey);
                         var userProperty = user.GetProperties()[propertyKey];
                     ");
 

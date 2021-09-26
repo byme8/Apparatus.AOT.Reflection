@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text;
 using Apparatus.AOT.Reflection.SourceGenerator.KeyOf;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Apparatus.AOT.Reflection.SourceGenerator.Reflection
 {
@@ -18,48 +19,57 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.Reflection
 
             var extensionType = context.Compilation
                 .GetTypeByMetadataName("Apparatus.AOT.Reflection.AOTReflectionExtensions");
-            var extensionMethod = extensionType
+            var extensionMethod = extensionType?
                 .GetMembers()
                 .OfType<IMethodSymbol>()
                 .First(o => o.Name == "GetProperties");
-            
+
             var genericHelperType = context.Compilation
                 .GetTypeByMetadataName("Apparatus.AOT.Reflection.GenericHelper");
             var bootstrapMethod =
-                genericHelperType
+                genericHelperType?
                     .GetMembers()
                     .OfType<IMethodSymbol>()
                     .First(o => o.Name == "Bootstrap");
 
+            var typesToBake = receiver.Invocations
+                .SelectMany(o =>
+                {
+                    var methodSymbol = GetMethodSymbol(context, o);
+                    if (methodSymbol is null)
+                    {
+                        return Enumerable.Empty<ITypeSymbol>();
+                    }
+
+                    if (SymbolEqualityComparer.Default.Equals(extensionMethod, methodSymbol.ReducedFrom) ||
+                        SymbolEqualityComparer.Default.Equals(bootstrapMethod, methodSymbol.ConstructedFrom))
+                    {
+                        return new[] { methodSymbol.TypeArguments.First() };
+                    }
+
+                    if (context.CancellationToken.IsCancellationRequested)
+                    {
+                        return Enumerable.Empty<ITypeSymbol>();
+                    }
+
+                    var keyofs = methodSymbol.Parameters
+                        .Select(param => param.Type as INamedTypeSymbol)
+                        .Where(param => param != null && KeyOfAnalyzer.IsKeyOf(param))
+                        .ToArray();
+
+                    return keyofs.Select(keyof => keyof.TypeArguments.First());
+                })
+                .Where(o => o != null)
+                .Distinct(SymbolEqualityComparer.Default);
+
             var processed = new HashSet<string>();
-            foreach (var memberAccess in receiver.MemberAccess)
+            foreach (var typeToBake in typesToBake.OfType<ITypeSymbol>())
             {
                 if (context.CancellationToken.IsCancellationRequested)
                 {
                     return;
                 }
 
-                var semanticModel = context.Compilation.GetSemanticModel(memberAccess.SyntaxTree);
-                var symbol = ModelExtensions.GetSymbolInfo(semanticModel, memberAccess.Name);
-                if (!(symbol.Symbol is IMethodSymbol methodSymbol))
-                {
-                    continue;
-                }
-
-                if (!SymbolEqualityComparer.Default.Equals(extensionMethod, methodSymbol.ReducedFrom) &&
-                    !SymbolEqualityComparer.Default.Equals(bootstrapMethod, methodSymbol.ConstructedFrom))
-                {
-                    continue;
-                }
-
-                
-                if (context.CancellationToken.IsCancellationRequested)
-                {
-                    return;
-                }
-
-                
-                var typeToBake = methodSymbol.TypeArguments.First();
                 if (processed.Contains(typeToBake.ToGlobalName()))
                 {
                     continue;
@@ -86,6 +96,27 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.Reflection
             }
         }
 
+        private static IMethodSymbol GetMethodSymbol(GeneratorExecutionContext context, InvocationExpressionSyntax invocation)
+        {
+            var semanticModel = context.Compilation.GetSemanticModel(invocation.SyntaxTree);
+            if (invocation.Expression is MemberAccessExpressionSyntax memberAccess)
+            {
+                var memberSymbol = semanticModel.GetSymbolInfo(memberAccess.Name);
+                if (memberSymbol.Symbol is IMethodSymbol memberMethodSymbol)
+                {
+                    return memberMethodSymbol;
+                }
+            }
+
+            var symbol = semanticModel.GetSymbolInfo(invocation.Expression);
+            if (symbol.Symbol is IMethodSymbol methodSymbol)
+            {
+                return methodSymbol;
+            }
+            
+            return null;
+        }
+
         private string GenerateExtensionForProperties(ITypeSymbol typeToBake)
         {
             var propertyAndAttributes = typeToBake
@@ -96,6 +127,7 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.Reflection
                 {
                     if (o.Count() > 1)
                     {
+                        // take newest property
                         return o.Last();
                     }
 
@@ -103,6 +135,7 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.Reflection
                 })
                 .ToArray();
 
+            var typeGlobalName = typeToBake.ToGlobalName();
             var source = $@"
 using System;
 using System.Linq;
@@ -115,13 +148,13 @@ namespace Apparatus.AOT.Reflection
         [global::System.Runtime.CompilerServices.ModuleInitializer]
         public static void Bootstrap()
         {{
-            MetadataStore<{typeToBake.ToGlobalName()}>.Data = _lazy;
+            MetadataStore<{typeGlobalName}>.Data = _lazy;
         }}
 
-        private static global::System.Lazy<global::System.Collections.Generic.IReadOnlyDictionary<KeyOf<{typeToBake.ToGlobalName()}>, IPropertyInfo>> _lazy = new global::System.Lazy<global::System.Collections.Generic.IReadOnlyDictionary<KeyOf<{typeToBake.ToGlobalName()}>, IPropertyInfo>>(new global::System.Collections.Generic.Dictionary<KeyOf<{typeToBake.ToGlobalName()}>, IPropertyInfo>
+        private static global::System.Lazy<global::System.Collections.Generic.IReadOnlyDictionary<KeyOf<{typeGlobalName}>, IPropertyInfo>> _lazy = new global::System.Lazy<global::System.Collections.Generic.IReadOnlyDictionary<KeyOf<{typeGlobalName}>, IPropertyInfo>>(new global::System.Collections.Generic.Dictionary<KeyOf<{typeGlobalName}>, IPropertyInfo>
         {{
 {propertyAndAttributes.Select(o =>
-        $@"            {{ new KeyOf<{typeToBake.ToGlobalName()}>(""{o.Name}""), new global::Apparatus.AOT.Reflection.PropertyInfo<{typeToBake.ToGlobalName()},{o.Type.ToGlobalName()}>(
+        $@"            {{ new KeyOf<{typeGlobalName}>(""{o.Name}""), new global::Apparatus.AOT.Reflection.PropertyInfo<{typeGlobalName},{o.Type.ToGlobalName()}>(
                         ""{o.Name}"", 
                         new global::System.Attribute[] 
                         {{
@@ -133,7 +166,7 @@ namespace Apparatus.AOT.Reflection
         }}); 
 
 
-        {GetVisibility(typeToBake)} static global::System.Collections.Generic.IReadOnlyDictionary<KeyOf<{typeToBake.ToGlobalName()}>, IPropertyInfo> GetProperties(this {typeToBake.ToGlobalName()} value)
+        {GetVisibility(typeToBake)} static global::System.Collections.Generic.IReadOnlyDictionary<KeyOf<{typeGlobalName}>, IPropertyInfo> GetProperties(this {typeGlobalName} value)
         {{
             return _lazy.Value;
         }}   
@@ -188,7 +221,5 @@ namespace Apparatus.AOT.Reflection
 
             return sb.ToString();
         }
-
-        
     }
 }
