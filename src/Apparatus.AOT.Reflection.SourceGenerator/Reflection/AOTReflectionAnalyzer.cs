@@ -5,20 +5,17 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace Apparatus.AOT.Reflection.SourceGenerator
+namespace Apparatus.AOT.Reflection.SourceGenerator.Reflection
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class AOTReflectionAnalyzer : DiagnosticAnalyzer
     {
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; }
-            = ImmutableArray.Create(new[]
-            {
-                DiagnosticDescriptors.EnumDoesntHaveProperties,
-            });
+            = ImmutableArray.Create(DiagnosticDescriptors.EnumDoesntHaveProperties);
         
         public override void Initialize(AnalysisContext context)
         {
-            //context.EnableConcurrentExecution();
+            context.EnableConcurrentExecution();
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
             context.RegisterSyntaxNodeAction(Handle, SyntaxKind.InvocationExpression);
         }

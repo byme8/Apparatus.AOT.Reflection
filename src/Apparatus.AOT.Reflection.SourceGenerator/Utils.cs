@@ -42,26 +42,12 @@ namespace Apparatus.AOT.Reflection.SourceGenerator
             }
         }
 
-        public static IEnumerable<IMethodSymbol> GetPublicMethods(this IEnumerable<ISymbol> members)
+        public static IEnumerable<TSymbol> GetPublicMembers<TSymbol>(this IEnumerable<ISymbol> members)
+            where TSymbol: ISymbol
         {
             return members
-                .OfType<IMethodSymbol>()
-                .Where(o => o.DeclaredAccessibility == Accessibility.Public)
-                .Where(o => o.MethodKind == MethodKind.Ordinary);
-        }
-
-        public static (bool IsDuckable, IEnumerable<ISymbol> MissingSymbols) IsTypeDuckableTo(
-            this ITypeSymbol @interface, ITypeSymbol implementation)
-        {
-            var methodsToDuck = MemberThatCanBeDucked(@interface);
-            var memberThatCanBeDucked = MemberThatCanBeDucked(implementation);
-
-            var missingSymbols = methodsToDuck
-                .Where(o => !memberThatCanBeDucked.ContainsKey(o.Key))
-                .Select(o => o.Value)
-                .ToArray();
-
-            return (!missingSymbols.Any(), missingSymbols);
+                .OfType<TSymbol>()
+                .Where(o => o.DeclaredAccessibility.HasFlag(Accessibility.Public));
         }
         
         public static string GenerateAttributes(this ImmutableArray<AttributeData> attributes)
@@ -88,34 +74,6 @@ namespace Apparatus.AOT.Reflection.SourceGenerator
             }
 
             return $@"{pair.Value.ToCSharpString()}";
-        }
-
-        private static Dictionary<string, ISymbol> MemberThatCanBeDucked(ITypeSymbol type)
-        {
-            return type
-                .GetAllMembers()
-                .GetPublicMethods()
-                .Select(o =>
-                (
-                    Key:
-                    o.ReturnType.ToGlobalName() +
-                    o.Name +
-                    o.Parameters
-                        .Select(oo => oo.Type.ToGlobalName() + oo.Name)
-                        .Join(),
-                    Value: (ISymbol)o
-                ))
-                .Concat(type
-                    .GetAllMembers()
-                    .OfType<IPropertySymbol>()
-                    .Where(o => o.DeclaredAccessibility.HasFlag(Accessibility.Public))
-                    .Select(o =>
-                    (
-                        Key: o.Type.ToGlobalName() + o.Name + (o.GetMethod != null ? "getter" : string.Empty) +
-                             (o.SetMethod != null ? "setter" : string.Empty),
-                        Value: (ISymbol)o
-                    )))
-                .ToDictionary(o => o.Key, o => o.Value);
         }
 
         public static string GetUniqueName(this ITypeSymbol type)

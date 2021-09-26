@@ -6,7 +6,8 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Apparatus.AOT.Reflection.Playground;
-using Apparatus.AOT.Reflection.SourceGenerator;
+using Apparatus.AOT.Reflection.SourceGenerator.KeyOf;
+using Apparatus.AOT.Reflection.SourceGenerator.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
@@ -36,7 +37,7 @@ namespace Apparatus.AOT.Reflection.Tests.Utils
             var method = extension.GetMethod("GetProperties", BindingFlags.Static | BindingFlags.Public);
             Assert.NotNull(method);
 
-            var entries = (IReadOnlyDictionary<string, IPropertyInfo>)method.Invoke(null, new[] { user ?? new User(), });
+            var entries = (IReadOnlyDictionary<KeyOf<User>, IPropertyInfo>)method.Invoke(null, new[] { user ?? new User(), });
 
             return entries.Values.ToArray();
         }
@@ -72,7 +73,7 @@ namespace Apparatus.AOT.Reflection.Tests.Utils
         {
             var compilation = await project.GetCompilationAsync();
             var analyzerResults = await compilation
-                .WithAnalyzers(ImmutableArray.Create<DiagnosticAnalyzer>(new[] { new AOTReflectionAnalyzer() }))
+                .WithAnalyzers(ImmutableArray.Create(new DiagnosticAnalyzer[] { new AOTReflectionAnalyzer(), new IndexPropertyAnalyzer(), }))
                 .GetAllDiagnosticsAsync();
 
             var error = compilation.GetDiagnostics().Concat(analyzerResults)

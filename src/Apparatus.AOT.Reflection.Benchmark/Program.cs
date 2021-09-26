@@ -132,7 +132,7 @@ namespace Apparatus.AOT.Reflection.Benchmark
         public string AOTReflection()
         {
             var entries = _user.GetProperties();
-            var firstName = entries[nameof(User.FirstName)];
+            var firstName = entries[KeyOf<User>.Parse("LastNameAsd")];
 
             var required = false;
             foreach (var o in firstName.Attributes)

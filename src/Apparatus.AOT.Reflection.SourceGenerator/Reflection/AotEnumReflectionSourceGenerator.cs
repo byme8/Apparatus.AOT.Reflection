@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
-namespace Apparatus.AOT.Reflection.SourceGenerator
+namespace Apparatus.AOT.Reflection.SourceGenerator.Reflection
 {
     [Generator]
     public class AotEnumReflectionSourceGenerator : ISourceGenerator

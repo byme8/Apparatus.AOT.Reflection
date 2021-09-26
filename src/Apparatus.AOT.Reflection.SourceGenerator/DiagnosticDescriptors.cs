@@ -12,5 +12,14 @@ namespace Apparatus.AOT.Reflection.SourceGenerator
             DiagnosticSeverity.Error,
             true
         );
+        
+        public static readonly DiagnosticDescriptor TypeDoesntContainsPropertyWithSuchName = new DiagnosticDescriptor(
+            "KEYOF_001",
+            "The property is missing in the type", 
+            "The property '{0}' is missing in the type '{1}'", 
+            "KeyOf",
+            DiagnosticSeverity.Error,
+            true
+        );
     }
 }

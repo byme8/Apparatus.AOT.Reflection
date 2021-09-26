@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Apparatus.AOT.Reflection.SourceGenerator
+namespace Apparatus.AOT.Reflection.SourceGenerator.Reflection
 {
     public class AotEnumReflectionSyntaxNotification : ISyntaxReceiver
     {

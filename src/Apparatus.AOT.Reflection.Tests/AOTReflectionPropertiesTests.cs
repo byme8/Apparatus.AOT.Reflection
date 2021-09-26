@@ -146,7 +146,7 @@ namespace Apparatus.AOT.Reflection.Tests
                 .GetMethod("GetUserInfo", BindingFlags.Static | BindingFlags.Public)!;
 
             var properties = methodInfo
-                .Invoke(null, null) as IReadOnlyDictionary<string, IPropertyInfo>;
+                .Invoke(null, null);
 
             Assert.NotNull(properties);
         }
@@ -183,7 +183,7 @@ namespace Apparatus.AOT.Reflection.Tests
                 .GetMethod("GetUserInfo", BindingFlags.Static | BindingFlags.Public)!;
 
             var properties = methodInfo
-                .Invoke(null, null) as IReadOnlyDictionary<string, IPropertyInfo>;
+                .Invoke(null, null);
 
             Assert.NotNull(properties);
         }
@@ -202,7 +202,7 @@ namespace Apparatus.AOT.Reflection.Tests
                 .GetMethod("GetUserInfo", BindingFlags.Static | BindingFlags.Public)!;
 
             var properties = methodInfo
-                .Invoke(null, null) as IReadOnlyDictionary<string, IPropertyInfo>;
+                .Invoke(null, null);
 
             Assert.NotNull(properties);
         }
@@ -225,7 +225,7 @@ namespace Apparatus.AOT.Reflection.Tests
                 .MakeGenericMethod(privateUser);
 
             var properties = methodInfo
-                .Invoke(null, new []{Activator.CreateInstance(privateUser)}) as IReadOnlyDictionary<string, IPropertyInfo>;
+                .Invoke(null, new []{Activator.CreateInstance(privateUser)});
 
             Assert.NotNull(properties);
         }

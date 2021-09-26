@@ -2,7 +2,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Apparatus.AOT.Reflection.SourceGenerator
+namespace Apparatus.AOT.Reflection.SourceGenerator.Reflection
 {
     public class AotPropertiesReflectionSyntaxNotification : ISyntaxReceiver
     {

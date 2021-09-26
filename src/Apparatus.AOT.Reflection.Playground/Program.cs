@@ -21,12 +21,12 @@ namespace Apparatus.AOT.Reflection.Playground
             var value = userKind.GetEnumValueInfo();
         }
 
-        public static IReadOnlyDictionary<string, IPropertyInfo> GetUserInfo()
+        public static IReadOnlyDictionary<KeyOf<User>, IPropertyInfo> GetUserInfo()
         {
             return GetInfo(new User());
         }
 
-        public static IReadOnlyDictionary<string, IPropertyInfo> GetInfo<T>(T value)
+        public static IReadOnlyDictionary<KeyOf<T>, IPropertyInfo> GetInfo<T>(T value)
         {
             return value.GetProperties();
         }

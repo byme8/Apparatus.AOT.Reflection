@@ -1,11 +1,9 @@
 ﻿using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 
-namespace Apparatus.AOT.Reflection.SourceGenerator
+namespace Apparatus.AOT.Reflection.SourceGenerator.Reflection
 {
     [Generator]
     public class AotPropertiesReflectionSourceGenerator : ISourceGenerator
@@ -91,8 +89,7 @@ namespace Apparatus.AOT.Reflection.SourceGenerator
         {
             var propertyAndAttributes = typeToBake
                 .GetAllMembers()
-                .OfType<IPropertySymbol>()
-                .Where(o => o.DeclaredAccessibility.HasFlag(Accessibility.Public))
+                .GetPublicMembers<IPropertySymbol>()
                 .GroupBy(o => o.Name)
                 .Select(o =>
                 {
@@ -105,12 +102,14 @@ namespace Apparatus.AOT.Reflection.SourceGenerator
                 })
                 .ToArray();
 
+            var version = typeof(AotPropertiesReflectionSourceGenerator).Assembly.GetName().Version.ToString();
             var source = $@"
 using System;
 using System.Linq;
 
 namespace Apparatus.AOT.Reflection
 {{
+    [System.CodeDom.Compiler.GeneratedCode(""AOT.Reflection"", ""{version}"")]
     public static class {typeToBake.ToFileName()}
     {{
         [global::System.Runtime.CompilerServices.ModuleInitializer]
@@ -119,10 +118,10 @@ namespace Apparatus.AOT.Reflection
             MetadataStore<{typeToBake.ToGlobalName()}>.Data = _lazy;
         }}
 
-        private static global::System.Lazy<global::System.Collections.Generic.IReadOnlyDictionary<string, IPropertyInfo>> _lazy = new global::System.Lazy<global::System.Collections.Generic.IReadOnlyDictionary<string, IPropertyInfo>>(new global::System.Collections.Generic.Dictionary<string, IPropertyInfo>
+        private static global::System.Lazy<global::System.Collections.Generic.IReadOnlyDictionary<KeyOf<{typeToBake.ToGlobalName()}>, IPropertyInfo>> _lazy = new global::System.Lazy<global::System.Collections.Generic.IReadOnlyDictionary<KeyOf<{typeToBake.ToGlobalName()}>, IPropertyInfo>>(new global::System.Collections.Generic.Dictionary<KeyOf<{typeToBake.ToGlobalName()}>, IPropertyInfo>
         {{
 {propertyAndAttributes.Select(o =>
-        $@"            {{ ""{o.Name}"", new global::Apparatus.AOT.Reflection.PropertyInfo<{typeToBake.ToGlobalName()},{o.Type.ToGlobalName()}>(
+        $@"            {{ KeyOf<{typeToBake.ToGlobalName()}>.Parse(""{o.Name}""), new global::Apparatus.AOT.Reflection.PropertyInfo<{typeToBake.ToGlobalName()},{o.Type.ToGlobalName()}>(
                         ""{o.Name}"", 
                         new global::System.Attribute[] 
                         {{
@@ -134,7 +133,7 @@ namespace Apparatus.AOT.Reflection
         }}); 
 
 
-        {GetVisibility(typeToBake)} static global::System.Collections.Generic.IReadOnlyDictionary<string, IPropertyInfo> GetProperties(this {typeToBake.ToGlobalName()} value)
+        {GetVisibility(typeToBake)} static global::System.Collections.Generic.IReadOnlyDictionary<KeyOf<{typeToBake.ToGlobalName()}>, IPropertyInfo> GetProperties(this {typeToBake.ToGlobalName()} value)
         {{
             return _lazy.Value;
         }}   
