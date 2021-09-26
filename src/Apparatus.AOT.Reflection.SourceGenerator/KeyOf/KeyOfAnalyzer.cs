@@ -87,6 +87,24 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.KeyOf
                     {
                         continue;
                     }
+                    
+                    if (propertySymbol.Symbol is IParameterSymbol parameterSymbol &&
+                        IsKeyOf(parameterSymbol.Type as INamedTypeSymbol))
+                    {
+                        continue;
+                    }
+                    
+                    if (propertySymbol.Symbol is IFieldSymbol fieldSymbol &&
+                        IsKeyOf(fieldSymbol.Type as INamedTypeSymbol))
+                    {
+                        continue;
+                    }
+                    
+                    if (propertySymbol.Symbol is IPropertySymbol property &&
+                        IsKeyOf(property.Type as INamedTypeSymbol))
+                    {
+                        continue;
+                    }
 
                     context.ReportDiagnostic(
                         Diagnostic.Create(

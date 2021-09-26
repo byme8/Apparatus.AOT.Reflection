@@ -63,6 +63,23 @@ namespace Apparatus.AOT.Reflection.Tests
         }
 
         [Fact]
+        public async Task WorksForGenericKeyOf()
+        {
+            var project = await TestProject.Project
+                .ReplacePartOfDocumentAsync("Program.cs", "// place to replace 1",
+                    @"
+                        GetIt(user, ""FirstName"");
+                        
+                        IPropertyInfo GetIt<T>(T value, KeyOf<T> property)
+                        {
+                            return value.GetProperties()[property];
+                        }
+                    ");
+
+            await project.CompileToRealAssembly();
+        }
+        
+        [Fact]
         public async Task FailedWithWrongPropertyNameInMethodCall()
         {
             var project = await TestProject.Project
@@ -165,6 +182,18 @@ namespace Apparatus.AOT.Reflection.Tests
                     "Program.cs",
                     ("// place to replace 1", @"var userProperty = user.GetProperties()[Name];"),
                     ("// place to replace properties", @"public const string Name = ""FirstName"";"));
+
+            await project.CompileToRealAssembly();
+        }
+        
+        [Fact]
+        public async Task WorksKeyOfProperties()
+        {
+            var project = await TestProject.Project
+                .ReplacePartOfDocumentAsync(
+                    "Program.cs",
+                    ("// place to replace 1", @"var userProperty = user.GetProperties()[Name];"),
+                    ("// place to replace properties", @"public static KeyOf<User> Name;"));
 
             await project.CompileToRealAssembly();
         }
