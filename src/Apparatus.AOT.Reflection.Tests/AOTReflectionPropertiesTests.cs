@@ -229,5 +229,49 @@ namespace Apparatus.AOT.Reflection.Tests
 
             Assert.NotNull(properties);
         }
+        
+        [Fact]
+        public async Task KeyOfTryParseDetected()
+        {
+            var project = await TestProject.Project
+                .ReplacePartOfDocumentAsync("Program.cs",
+                    ("// place to replace 0", "class PrivateUser { public string FirstName { get; set; } }"),
+                    ("var user = new User(); // 1", @"var success = KeyOf<PrivateUser>.TryParse(""FirstName"", out var key);"));
+
+            var assembly = await project.CompileToRealAssembly();
+
+            var privateUser = assembly.GetType("Apparatus.AOT.Reflection.Playground.PrivateUser");
+            var methodInfo = assembly
+                .GetType("Apparatus.AOT.Reflection.Playground.Program")!
+                .GetMethod("GetInfo", BindingFlags.Static | BindingFlags.Public)
+                .MakeGenericMethod(privateUser);
+
+            var properties = methodInfo
+                .Invoke(null, new []{Activator.CreateInstance(privateUser)});
+
+            Assert.NotNull(properties);
+        }
+        
+        [Fact]
+        public async Task KeyOfInMethodDeclarationDetected()
+        {
+            var project = await TestProject.Project
+                .ReplacePartOfDocumentAsync("Program.cs",
+                    ("// place to replace 0", "class PrivateUser { public string FirstName { get; set; } }"),
+                    ("private static void DontCall()", @"private static void DontCall(Apparatus.AOT.Reflection.KeyOf<PrivateUser> key)"));
+
+            var assembly = await project.CompileToRealAssembly();
+
+            var privateUser = assembly.GetType("Apparatus.AOT.Reflection.Playground.PrivateUser");
+            var methodInfo = assembly
+                .GetType("Apparatus.AOT.Reflection.Playground.Program")!
+                .GetMethod("GetInfo", BindingFlags.Static | BindingFlags.Public)
+                .MakeGenericMethod(privateUser);
+
+            var properties = methodInfo
+                .Invoke(null, new []{Activator.CreateInstance(privateUser)});
+
+            Assert.NotNull(properties);
+        }
     }
 }

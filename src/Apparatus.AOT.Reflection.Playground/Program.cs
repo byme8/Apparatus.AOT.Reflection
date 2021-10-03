@@ -11,13 +11,13 @@ namespace Apparatus.AOT.Reflection.Playground
 
         private static void Main(string[] args)
         {
-            var user = new User();
+            var user = new User(); // 1
             // place to replace 1
         }
 
         private static void DontCall()
         {
-            var user = new User();
+            var user = new User(); // 2
             var attributes = user.GetProperties();
             var userKind = UserKind.Admin;
             var value = userKind.GetEnumValueInfo();

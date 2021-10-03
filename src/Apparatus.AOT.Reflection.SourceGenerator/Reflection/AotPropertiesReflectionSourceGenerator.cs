@@ -24,41 +24,7 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.Reflection
                 .OfType<IMethodSymbol>()
                 .First(o => o.Name == "GetProperties");
 
-            var genericHelperType = context.Compilation
-                .GetTypeByMetadataName("Apparatus.AOT.Reflection.GenericHelper");
-            var bootstrapMethod =
-                genericHelperType?
-                    .GetMembers()
-                    .OfType<IMethodSymbol>()
-                    .First(o => o.Name == "Bootstrap");
-
-            var typesToBake = receiver.Invocations
-                .SelectMany(o =>
-                {
-                    var methodSymbol = GetMethodSymbol(context, o);
-                    if (methodSymbol is null)
-                    {
-                        return Enumerable.Empty<ITypeSymbol>();
-                    }
-
-                    if (SymbolEqualityComparer.Default.Equals(extensionMethod, methodSymbol.ReducedFrom) ||
-                        SymbolEqualityComparer.Default.Equals(bootstrapMethod, methodSymbol.ConstructedFrom))
-                    {
-                        return new[] { methodSymbol.TypeArguments.First() };
-                    }
-
-                    if (context.CancellationToken.IsCancellationRequested)
-                    {
-                        return Enumerable.Empty<ITypeSymbol>();
-                    }
-
-                    var keyofs = methodSymbol.Parameters
-                        .Select(param => param.Type as INamedTypeSymbol)
-                        .Where(param => param != null && KeyOfAnalyzer.IsKeyOf(param))
-                        .ToArray();
-
-                    return keyofs.Select(keyof => keyof.TypeArguments.First());
-                })
+            var typesToBake = AnalyzeInvocations().Concat(AnalyzeTypes())
                 .Where(o => o != null)
                 .Distinct(SymbolEqualityComparer.Default);
 
@@ -94,6 +60,47 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.Reflection
                 context.AddSource(typeToBake.ToFileName(), source);
                 processed.Add(typeToBake.ToGlobalName());
             }
+
+            IEnumerable<ISymbol> AnalyzeInvocations()
+                => receiver.Invocations.SelectMany(o =>
+                {
+                    var methodSymbol = GetMethodSymbol(context, o);
+                    if (methodSymbol is null)
+                    {
+                        return Enumerable.Empty<ITypeSymbol>();
+                    }
+
+                    if (SymbolEqualityComparer.Default.Equals(extensionMethod, methodSymbol.ReducedFrom))
+                    {
+                        return new[] { methodSymbol.TypeArguments.First() };
+                    }
+
+                    if (context.CancellationToken.IsCancellationRequested)
+                    {
+                        return Enumerable.Empty<ITypeSymbol>();
+                    }
+
+                    var keyofs = methodSymbol.Parameters
+                        .Select(param => param.Type as INamedTypeSymbol)
+                        .Where(param => param != null && KeyOfAnalyzer.IsKeyOf(param));
+
+                    return keyofs.Select(keyof => keyof.TypeArguments.First());
+                });
+
+            IEnumerable<ISymbol> AnalyzeTypes()
+                => receiver.GenericNames.Select(o =>
+                {
+                    var semanticModel = context.Compilation.GetSemanticModel(o.SyntaxTree);
+                    var symbol = semanticModel
+                        .GetSpeculativeSymbolInfo(o.SpanStart, o, SpeculativeBindingOption.BindAsTypeOrNamespace);
+
+                    if (symbol.Symbol is INamedTypeSymbol typeSymbol && KeyOfAnalyzer.IsKeyOf(typeSymbol))
+                    {
+                        return typeSymbol.TypeArguments.First();
+                    }
+
+                    return null;
+                });
         }
 
         private static IMethodSymbol GetMethodSymbol(GeneratorExecutionContext context, InvocationExpressionSyntax invocation)
@@ -113,7 +120,7 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.Reflection
             {
                 return methodSymbol;
             }
-            
+
             return null;
         }
 
