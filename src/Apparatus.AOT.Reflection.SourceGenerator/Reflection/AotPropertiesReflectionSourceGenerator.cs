@@ -26,6 +26,7 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.Reflection
 
             var typesToBake = AnalyzeInvocations().Concat(AnalyzeTypes())
                 .Where(o => o != null)
+                .Where(o => o.Kind == SymbolKind.NamedType)
                 .Distinct(SymbolEqualityComparer.Default);
 
             var processed = new HashSet<string>();

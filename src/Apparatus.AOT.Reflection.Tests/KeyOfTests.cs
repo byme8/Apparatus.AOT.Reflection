@@ -209,5 +209,17 @@ namespace Apparatus.AOT.Reflection.Tests
 
             await Assert.ThrowsAsync<Exception>(async () => await project.CompileToRealAssembly());
         }
+        
+        [Fact]
+        public async Task IgnoresGenericKeyOfT()
+        {
+            var project = await TestProject.Project
+                .ReplacePartOfDocumentAsync(
+                    "Program.cs",
+                    "// place to replace 1",
+                    @"var genericType = typeof(KeyOf<>);");
+
+            await project.CompileToRealAssembly();
+        }
     }
 }
