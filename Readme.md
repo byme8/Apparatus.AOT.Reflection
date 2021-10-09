@@ -112,6 +112,38 @@ foreach (var value in values)
     Console.WriteLine($"{value.Name} => {description.Description}");
 }
 ```
+# KeyOf
+
+The AOT.Reflection contains a way to express the intention safely when you want to pass the property inside the method. It works similarly to `` keyof `` from TypeScript. Here is an example:
+
+``` cs
+using Apparatus.AOT.Reflection;
+
+var user = new User {FirstName = "Jon", LastName = "Smith"};
+var firstName = DoIt (user, "FirstName"); // no error
+var lastName = DoIt (user, "LastName"); // no error
+var missingProperty = DoIt (user, "Test"); // compilation error
+
+
+object DoIt <T> (T value, KeyOf <T> propertyName)
+{
+     var property = value.GetProperties () [propertyName];
+     if (property.TryGetValue (value, out var propertyValue))
+     {
+         return propertyValue;
+     }
+
+     return null;
+}
+
+class User
+{
+     public string FirstName {get; set; }
+     public string LastName {get; set; }
+}
+```
+
+More information you can find in separate [article] (https://dev.to/byme8/improving-c-with-typescript-keyof-t-1jea).
 
 # Performance
 
