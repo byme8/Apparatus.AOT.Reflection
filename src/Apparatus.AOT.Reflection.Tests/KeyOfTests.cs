@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Apparatus.AOT.Reflection.Tests
 {
-    public class KeyOfTests
+    public class KeyOfTests : Test
     {
         [Fact]
         public async Task WorksWithCorrectProperty()

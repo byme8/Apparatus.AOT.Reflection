@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Apparatus.AOT.Reflection.Tests
 {
-    public class AOTReflectionArgumentTests
+    public class AOTReflectionArgumentTests : Test
     {
         [Fact]
         public async Task IntWorks()
@@ -21,7 +21,7 @@ namespace Apparatus.AOT.Reflection.Tests
                     new RequiredAttribute(),
                     new TestAttribute(1)
                 }),
-                new PropertyInfo<User, string>("LastName", new[] {new RequiredAttribute() }),
+                new PropertyInfo<User, string>("LastName", new[] { new RequiredAttribute() }),
             };
 
             var project = await TestProject.Project
@@ -67,7 +67,7 @@ namespace Apparatus.AOT.Reflection.Tests
                 new PropertyInfo<User, string>("FirstName", new Attribute[]
                 {
                     new RequiredAttribute(),
-                    new TestAttribute(textArray:  new[] { "test", "test1",})
+                    new TestAttribute(textArray: new[] { "test", "test1", })
                 }),
                 new PropertyInfo<User, string>("LastName", new[] { new RequiredAttribute(), }),
             };

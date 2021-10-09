@@ -98,6 +98,7 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.Reflection
             var source = $@"
 using System;
 using System.Linq;
+using Apparatus.AOT.Reflection.Core.Stores;
 
 namespace Apparatus.AOT.Reflection
 {{

@@ -4,12 +4,9 @@ using Apparatus.AOT.Reflection.Core.Stores;
 
 namespace Apparatus.AOT.Reflection
 {
-    public static class AOTReflectionExtensions
+    public static class EnumHelper
     {
-        public static IReadOnlyDictionary<KeyOf<TValue>, IPropertyInfo> GetProperties<TValue>(this TValue value) =>
-            AOTReflection.GetProperties<TValue>();
-
-        public static IEnumValueInfo<TEnum> GetEnumValueInfo<TEnum>(this TEnum value)
+        public static IEnumerable<IEnumValueInfo<TEnum>> GetEnumInfo<TEnum>()
             where TEnum : Enum
         {
             var data = EnumMetadataStore<TEnum>.Data;
@@ -17,10 +14,9 @@ namespace Apparatus.AOT.Reflection
             {
                 throw new InvalidOperationException(
                     $"Type '{typeof(TEnum).FullName}' is not registered. Use 'Apparatus.AOT.Reflection.GenericHelper.Bootstrap' to bootstrap it.");
-                return null;
             }
 
-            return data.Value[value];
+            return data.Value.Values;
         }
     }
 }

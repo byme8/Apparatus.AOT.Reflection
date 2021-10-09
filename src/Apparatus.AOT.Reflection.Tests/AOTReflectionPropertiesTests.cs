@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Apparatus.AOT.Reflection.Core.Stores;
 using Apparatus.AOT.Reflection.Playground;
 using Apparatus.AOT.Reflection.Tests.Data;
 using Apparatus.AOT.Reflection.Tests.Utils;
@@ -12,7 +13,7 @@ using Xunit;
 
 namespace Apparatus.AOT.Reflection.Tests
 {
-    public class AOTReflectionPropertiesTests
+    public class AOTReflectionPropertiesTests : Test
     {
         [Fact]
         public async Task CompiledWithoutErrors()
@@ -36,8 +37,7 @@ namespace Apparatus.AOT.Reflection.Tests
 
             var entries = await project.ExecutePropertiesTest();
 
-            Assert.True(expectedEntries
-                .SequenceEqual(entries!));
+            Assert.True(expectedEntries.SequenceEqual(entries!));
         }
 
         [Fact]
@@ -49,7 +49,7 @@ namespace Apparatus.AOT.Reflection.Tests
                     new Attribute[]
                     {
                         new RequiredAttribute(),
-                        new DescriptionAttribute("Some first name" )
+                        new DescriptionAttribute("Some first name")
                     }),
                 new PropertyInfo<User, string>("LastName", new Attribute[] { new RequiredAttribute(), }),
             };
@@ -150,8 +150,8 @@ namespace Apparatus.AOT.Reflection.Tests
 
             Assert.NotNull(properties);
         }
-
-        //[Fact]
+        
+        [Fact]
         public async Task ExceptionFiredWhenTypeIsNotBootstrapped()
         {
             var project = await TestProject.Project
@@ -164,30 +164,11 @@ namespace Apparatus.AOT.Reflection.Tests
 
             Assert.Throws<TargetInvocationException>(() =>
             {
-                MetadataStore<User>.Data = null;
+                methodInfo.Invoke(null, null);
+                TypedMetadataStore.Types.Clear();
                 return methodInfo.Invoke(null, null);
             });
         }
-
-        [Fact]
-        public async Task BootstrapMethodWorks()
-        {
-            var project = await TestProject.Project
-                .ReplacePartOfDocumentAsync("Program.cs", "var attributes = user.GetProperties();",
-                    "GenericHelper.Bootstrap<User>();");
-
-            var assembly = await project.CompileToRealAssembly();
-
-            var methodInfo = assembly
-                .GetType("Apparatus.AOT.Reflection.Playground.Program")!
-                .GetMethod("GetUserInfo", BindingFlags.Static | BindingFlags.Public)!;
-
-            var properties = methodInfo
-                .Invoke(null, null);
-
-            Assert.NotNull(properties);
-        }
-
         [Fact]
         public async Task PropertiesWithOverrideAndNewHandledProperly()
         {
@@ -206,7 +187,7 @@ namespace Apparatus.AOT.Reflection.Tests
 
             Assert.NotNull(properties);
         }
-        
+
         [Fact]
         public async Task PrivateClassesHandledProperly()
         {
@@ -225,11 +206,11 @@ namespace Apparatus.AOT.Reflection.Tests
                 .MakeGenericMethod(privateUser);
 
             var properties = methodInfo
-                .Invoke(null, new []{Activator.CreateInstance(privateUser)});
+                .Invoke(null, new[] { Activator.CreateInstance(privateUser) });
 
             Assert.NotNull(properties);
         }
-        
+
         [Fact]
         public async Task KeyOfTryParseDetected()
         {
@@ -247,11 +228,11 @@ namespace Apparatus.AOT.Reflection.Tests
                 .MakeGenericMethod(privateUser);
 
             var properties = methodInfo
-                .Invoke(null, new []{Activator.CreateInstance(privateUser)});
+                .Invoke(null, new[] { Activator.CreateInstance(privateUser) });
 
             Assert.NotNull(properties);
         }
-        
+
         [Fact]
         public async Task KeyOfInMethodDeclarationDetected()
         {
@@ -269,7 +250,7 @@ namespace Apparatus.AOT.Reflection.Tests
                 .MakeGenericMethod(privateUser);
 
             var properties = methodInfo
-                .Invoke(null, new []{Activator.CreateInstance(privateUser)});
+                .Invoke(null, new[] { Activator.CreateInstance(privateUser) });
 
             Assert.NotNull(properties);
         }

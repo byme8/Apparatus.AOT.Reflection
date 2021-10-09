@@ -147,6 +147,7 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.Reflection
             var source = $@"
 using System;
 using System.Linq;
+using Apparatus.AOT.Reflection.Core.Stores;
 
 namespace Apparatus.AOT.Reflection
 {{
@@ -156,10 +157,11 @@ namespace Apparatus.AOT.Reflection
         [global::System.Runtime.CompilerServices.ModuleInitializer]
         public static void Bootstrap()
         {{
-            MetadataStore<{typeGlobalName}>.Data = _lazy;
+            var type = typeof({typeGlobalName});
+            TypedMetadataStore.Types.Add(type, typeInfo);
         }}
 
-        private static global::System.Lazy<global::System.Collections.Generic.IReadOnlyDictionary<KeyOf<{typeGlobalName}>, IPropertyInfo>> _lazy = new global::System.Lazy<global::System.Collections.Generic.IReadOnlyDictionary<KeyOf<{typeGlobalName}>, IPropertyInfo>>(new global::System.Collections.Generic.Dictionary<KeyOf<{typeGlobalName}>, IPropertyInfo>
+        private static global::System.Collections.Generic.IReadOnlyDictionary<IKeyOf, IPropertyInfo> typeInfo = new global::System.Collections.Generic.Dictionary<IKeyOf, IPropertyInfo>
         {{
 {propertyAndAttributes.Select(o =>
         $@"            {{ new KeyOf<{typeGlobalName}>(""{o.Name}""), new global::Apparatus.AOT.Reflection.PropertyInfo<{typeGlobalName},{o.Type.ToGlobalName()}>(
@@ -171,12 +173,12 @@ namespace Apparatus.AOT.Reflection
                         {GenerateGetterAndSetter(o)})
                 }},")
     .JoinWithNewLine()}
-        }}); 
+        }}; 
 
 
         {GetVisibility(typeToBake)} static global::System.Collections.Generic.IReadOnlyDictionary<KeyOf<{typeGlobalName}>, IPropertyInfo> GetProperties(this {typeGlobalName} value)
         {{
-            return _lazy.Value;
+            return MetadataStore<{typeGlobalName}>.Data;
         }}   
     }}
 }}

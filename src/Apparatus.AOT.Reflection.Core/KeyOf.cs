@@ -1,8 +1,16 @@
 ﻿using System;
+using Apparatus.AOT.Reflection.Core.Stores;
 
 namespace Apparatus.AOT.Reflection
 {
-    public class KeyOf<T> : IEquatable<KeyOf<T>>
+    public interface IKeyOf
+    {
+        string Value { get; }
+
+        Type Target { get; }
+    }
+
+    public class KeyOf<T> : IEquatable<KeyOf<T>>, IKeyOf
     {
         public KeyOf(string value)
         {
@@ -10,6 +18,7 @@ namespace Apparatus.AOT.Reflection
         }
 
         public string Value { get; }
+        public Type Target => typeof(T);
 
         public bool Equals(KeyOf<T> other)
         {
@@ -69,7 +78,7 @@ namespace Apparatus.AOT.Reflection
         public static bool TryParse(string property, out KeyOf<T> key)
         {
             var maybeKeyOf = new KeyOf<T>(property);
-            if (MetadataStore<T>.Data.Value.ContainsKey(maybeKeyOf))
+            if (MetadataStore<T>.Data.ContainsKey(maybeKeyOf))
             {
                 key = maybeKeyOf;
                 return true;

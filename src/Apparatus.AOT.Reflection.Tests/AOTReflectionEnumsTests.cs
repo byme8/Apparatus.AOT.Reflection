@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Apparatus.AOT.Reflection.Tests
 {
-    public class AOTReflectionEnumsTests
+    public class AOTReflectionEnumsTests : Test
     {
         [Fact]
         public async Task GetPropertiesOnEnumFails()
@@ -64,7 +64,7 @@ namespace Apparatus.AOT.Reflection.Tests
             var entry = method.Invoke(UserKind.Admin);
             Assert.Equal(expected, entry);
         }
-        
+
         [Fact]
         public async Task PrivateEnumHandledProperly()
         {
@@ -93,17 +93,17 @@ namespace Apparatus.AOT.Reflection.Tests
                 new EnumValueInfo<UserKind>("User", UserKind.User, new Attribute[0]),
                 new EnumValueInfo<UserKind>("Admin", UserKind.Admin, new Attribute[] { new DescriptionAttribute("Admin user") })
             };
-            
+
             var project = await TestProject.Project.ReplacePartOfDocumentAsync(
                 "Program.cs",
                 "var value = userKind.GetEnumValueInfo();",
                 "EnumHelper.GetEnumInfo<UserKind>();");
-            
+
             var assembly = await project.CompileToRealAssembly();
-            
+
             var extension = assembly.GetType("Apparatus.AOT.Reflection.Playground.Program");
             Assert.NotNull(extension);
-            
+
             var method = extension
                 .GetMethod("GetEnumInfo", BindingFlags.Static | BindingFlags.Public)
                 .MakeGenericMethod(typeof(UserKind))
@@ -111,7 +111,7 @@ namespace Apparatus.AOT.Reflection.Tests
             Assert.NotNull(method);
 
             var entries = method.Invoke();
-            
+
             Assert.True(expected.SequenceEqual(entries));
         }
     }
