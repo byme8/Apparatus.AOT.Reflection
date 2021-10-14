@@ -143,7 +143,7 @@ class User
 }
 ```
 
-More information you can find in separate [article] (https://dev.to/byme8/improving-c-with-typescript-keyof-t-1jea).
+More information you can find in separate (article)[https://dev.to/byme8/improving-c-with-typescript-keyof-t-1jea].
 
 # Performance
 
