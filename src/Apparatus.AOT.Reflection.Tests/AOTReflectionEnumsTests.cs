@@ -14,18 +14,6 @@ namespace Apparatus.AOT.Reflection.Tests
     public class AOTReflectionEnumsTests : Test
     {
         [Fact]
-        public async Task GetPropertiesOnEnumFails()
-        {
-            var project = await TestProject.Project.ReplacePartOfDocumentAsync(
-                "Program.cs",
-                "var value = userKind.GetEnumValueInfo();",
-                "var enumValues = userKind.GetProperties();");
-
-
-            await Assert.ThrowsAsync<Exception>(async () => await project.CompileToRealAssembly());
-        }
-
-        [Fact]
         public async Task GetEnumValueInfoWorks()
         {
             var expected = new EnumValueInfo<UserKind>("User", (int)UserKind.User, UserKind.User, new Attribute[0]);

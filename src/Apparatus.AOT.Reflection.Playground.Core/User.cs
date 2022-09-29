@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Apparatus.AOT.Reflection.Playground
 {
+    [AOTReflection]
     public enum UserKind
     {
         User,

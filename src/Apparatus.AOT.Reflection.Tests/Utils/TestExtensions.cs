@@ -17,8 +17,10 @@ namespace Apparatus.AOT.Reflection.Tests.Utils
 {
     public static class TestExtensions
     {
-        public static async Task<Project> ReplacePartOfDocumentAsync(this Project project, string documentName,
-            string textToReplace, string newText)
+        public static async Task<Project> ReplacePartOfDocumentAsync(this Project project,
+            string documentName,
+            string textToReplace,
+            string newText)
         {
             var document = project.Documents.First(o => o.Name == documentName);
             var text = await document.GetTextAsync();
@@ -41,8 +43,9 @@ namespace Apparatus.AOT.Reflection.Tests.Utils
 
             return entries.Values.ToArray();
         }
-        
-        public static async Task<Project> ReplacePartOfDocumentAsync(this Project project, string documentName,
+
+        public static async Task<Project> ReplacePartOfDocumentAsync(this Project project,
+            string documentName,
             params (string TextToReplace, string NewText)[] places)
         {
             foreach (var place in places)
@@ -69,6 +72,14 @@ namespace Apparatus.AOT.Reflection.Tests.Utils
             return solution.Projects.First(o => o.Name == project.Name);
         }
 
+        public static async Task Validate(this Project project)
+        {
+            var assembly = await project.CompileToRealAssembly();
+            var program = assembly.GetType("Apparatus.AOT.Reflection.Playground.Program");
+            var main = program!.GetMethod("Main", BindingFlags.Public | BindingFlags.Static);
+            main!.Invoke(null, new[] { (string[])null });
+        }
+
         public static async Task<Assembly> CompileToRealAssembly(this Project project)
         {
             var compilation = await project.GetCompilationAsync();
@@ -84,7 +95,7 @@ namespace Apparatus.AOT.Reflection.Tests.Utils
 
             var error = compilation.GetDiagnostics().Concat(analyzerResults)
                 .FirstOrDefault(o => o.Severity == DiagnosticSeverity.Error);
-            
+
             if (error != null)
             {
                 throw new Exception(error.GetMessage());

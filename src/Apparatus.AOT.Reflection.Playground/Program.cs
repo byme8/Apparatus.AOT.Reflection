@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq; // do not remove
+using Apparatus.AOT.Reflection; // do not remove
+using Apparatus.AOT.Reflection.Core.Stores; // do not remove
 
 namespace Apparatus.AOT.Reflection.Playground
 {
@@ -9,7 +12,7 @@ namespace Apparatus.AOT.Reflection.Playground
     {
         // place to replace properties
 
-        private static void Main(string[] args)
+        public static void Main(string[] args)
         {
             var user = new User(); // 1
             // place to replace 1
@@ -17,10 +20,6 @@ namespace Apparatus.AOT.Reflection.Playground
 
         private static void DontCall()
         {
-            var user = new User(); // 2
-            var attributes = user.GetProperties();
-            var userKind = UserKind.Admin;
-            var value = userKind.GetEnumValueInfo();
         }
 
         public static IReadOnlyDictionary<KeyOf<User>, IPropertyInfo> GetUserInfo()

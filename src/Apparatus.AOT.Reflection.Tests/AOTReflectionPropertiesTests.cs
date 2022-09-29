@@ -32,7 +32,9 @@ namespace Apparatus.AOT.Reflection.Tests
             };
 
             var project = await TestProject.Project
-                .ReplacePartOfDocumentAsync("Program.cs", "// place to replace 1",
+                .ReplacePartOfDocumentAsync(
+                    "Program.cs",
+                    "// place to replace 1",
                     @"var attributes = user.GetProperties();");
 
             var entries = await project.ExecutePropertiesTest();
@@ -217,7 +219,7 @@ namespace Apparatus.AOT.Reflection.Tests
             var project = await TestProject.Project
                 .ReplacePartOfDocumentAsync("Program.cs",
                     ("// place to replace 0", "class PrivateUser { public string FirstName { get; set; } }"),
-                    ("var user = new User(); // 1", @"var success = KeyOf<PrivateUser>.TryParse(""FirstName"", out var key);"));
+                    ("// place to replace 1", @"var success = KeyOf<PrivateUser>.TryParse(""FirstName"", out var key);"));
 
             var assembly = await project.CompileToRealAssembly();
 

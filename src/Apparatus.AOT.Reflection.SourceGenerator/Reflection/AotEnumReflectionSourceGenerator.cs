@@ -10,7 +10,23 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.Reflection
     {
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
-            var types = context.SyntaxProvider.CreateSyntaxProvider(
+            var typesFromDeclarations = context.SyntaxProvider.CreateSyntaxProvider(
+                FindAOTReflectionAttributeOnType,
+                (syntaxContext, token) =>
+                {
+                    var baseDeclaration = (BaseTypeDeclarationSyntax)syntaxContext.Node;
+                    var possibleType = syntaxContext.SemanticModel.GetDeclaredSymbol(baseDeclaration);
+                    if (possibleType is not ITypeSymbol typeSymbol)
+                    {
+                        return null;
+                    }
+
+                    return typeSymbol;
+                })
+                .Where(o => o is not null)
+                .WithComparer(SymbolEqualityComparer.Default);;
+            
+            var typesFromInvocations = context.SyntaxProvider.CreateSyntaxProvider(
                 FindGetEnumValueInfo,
                 (syntaxContext, token) =>
                 {
@@ -24,10 +40,11 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.Reflection
 
                     return methodSymbol.TypeArguments.First();
                 })
+                .Where(o => o is not null)
                 .WithComparer(SymbolEqualityComparer.Default);
-
             
-            context.RegisterImplementationSourceOutput(types, Generate);
+            context.RegisterImplementationSourceOutput(typesFromDeclarations, Generate);
+            context.RegisterImplementationSourceOutput(typesFromInvocations, Generate);
         }
 
         private void Generate(SourceProductionContext context, ITypeSymbol typeToBake)
@@ -46,13 +63,12 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.Reflection
             context.AddSource(typeToBake.ToFileName(), source);
         }
 
-        private bool FindEnumReflectionUsage(SyntaxNode syntaxNode, CancellationToken cancellationToken)
+        private bool FindAOTReflectionAttributeOnType(SyntaxNode syntaxNode, CancellationToken cancellationToken)
         {
-            if (syntaxNode is InvocationExpressionSyntax invocation &&
-                invocation.Expression is MemberAccessExpressionSyntax memberAccess &&
-                (memberAccess.Name.ToString() == "GetEnumValueInfo" ||
-                 memberAccess.Name is GenericNameSyntax genericNameSyntax &&
-                 genericNameSyntax.Identifier.ToString() == "GetEnumInfo"))
+            if (syntaxNode is BaseTypeDeclarationSyntax typeDeclarationSyntax &&
+                typeDeclarationSyntax.AttributeLists
+                    .Any(o => o.Attributes
+                        .Any(oo => oo.Name.ToString().Contains("AOTReflection"))))
             {
                 return true;
             }
