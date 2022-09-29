@@ -152,7 +152,7 @@ using Apparatus.AOT.Reflection.Core.Stores;
 namespace Apparatus.AOT.Reflection
 {{
     {KeyOfAnalyzer.CodeGenerationAttribute}
-    public static class {typeToBake.ToFileName()}
+    public static class {typeToBake.ToSafeGlobalName()}Extensions
     {{
         [global::System.Runtime.CompilerServices.ModuleInitializer]
         public static void Bootstrap()

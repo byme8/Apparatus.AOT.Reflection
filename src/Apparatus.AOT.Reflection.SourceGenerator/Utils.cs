@@ -63,10 +63,15 @@ namespace Apparatus.AOT.Reflection.SourceGenerator
         {
             return symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
         }
+        
+        public static string ToSafeGlobalName(this ISymbol symbol)
+        {
+            return symbol.ToGlobalName().Replace(".", "").Replace("global::", "");
+        }
 
         public static string ToFileName(this ISymbol symbol)
         {
-            return symbol.ToGlobalName().Replace(".", "_").Replace("global::", "") + "Extensions";
+            return symbol.ToGlobalName().Replace("global::", "") + "Extensions.g";
         }
 
         public static string Join(this IEnumerable<string> values, string separator = ", ")

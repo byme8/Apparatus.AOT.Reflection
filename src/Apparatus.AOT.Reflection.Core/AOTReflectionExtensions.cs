@@ -17,7 +17,6 @@ namespace Apparatus.AOT.Reflection
             {
                 throw new InvalidOperationException(
                     $"Type '{typeof(TEnum).FullName}' is not registered. Use 'Apparatus.AOT.Reflection.GenericHelper.Bootstrap' to bootstrap it.");
-                return null;
             }
 
             return data.Value[value];

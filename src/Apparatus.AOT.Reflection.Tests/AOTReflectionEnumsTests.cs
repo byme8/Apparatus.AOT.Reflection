@@ -28,7 +28,7 @@ namespace Apparatus.AOT.Reflection.Tests
         [Fact]
         public async Task GetEnumValueInfoWorks()
         {
-            var expected = new EnumValueInfo<UserKind>("User", UserKind.User, new Attribute[0]);
+            var expected = new EnumValueInfo<UserKind>("User", (int)UserKind.User, UserKind.User, new Attribute[0]);
 
             var assembly = await TestProject.Project.CompileToRealAssembly();
 
@@ -48,7 +48,7 @@ namespace Apparatus.AOT.Reflection.Tests
         [Fact]
         public async Task GetEnumValueInfoWorksWithAttributes()
         {
-            var expected = new EnumValueInfo<UserKind>("Admin", UserKind.Admin, new Attribute[] { new DescriptionAttribute("Admin user") });
+            var expected = new EnumValueInfo<UserKind>("Admin", (int)UserKind.User, UserKind.Admin, new Attribute[] { new DescriptionAttribute("Admin user") });
 
             var assembly = await TestProject.Project.CompileToRealAssembly();
 
@@ -68,7 +68,7 @@ namespace Apparatus.AOT.Reflection.Tests
         [Fact]
         public async Task PrivateEnumHandledProperly()
         {
-            var expected = new EnumValueInfo<UserKind>("Admin", UserKind.Admin, new Attribute[] { new DescriptionAttribute("Admin user") });
+            var expected = new EnumValueInfo<UserKind>("Admin", (int)UserKind.Admin, UserKind.Admin, new Attribute[] { new DescriptionAttribute("Admin user") });
 
             var assembly = await TestProject.Project.CompileToRealAssembly();
 
@@ -90,8 +90,8 @@ namespace Apparatus.AOT.Reflection.Tests
         {
             var expected = new[]
             {
-                new EnumValueInfo<UserKind>("User", UserKind.User, new Attribute[0]),
-                new EnumValueInfo<UserKind>("Admin", UserKind.Admin, new Attribute[] { new DescriptionAttribute("Admin user") })
+                new EnumValueInfo<UserKind>("User", (int)UserKind.User, UserKind.User, new Attribute[0]),
+                new EnumValueInfo<UserKind>("Admin", (int)UserKind.Admin, UserKind.Admin, new Attribute[] { new DescriptionAttribute("Admin user") })
             };
 
             var project = await TestProject.Project.ReplacePartOfDocumentAsync(

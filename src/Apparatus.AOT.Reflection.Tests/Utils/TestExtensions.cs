@@ -31,7 +31,7 @@ namespace Apparatus.AOT.Reflection.Tests.Utils
         {
             var assembly = await project.CompileToRealAssembly();
 
-            var extension = assembly.GetType("Apparatus.AOT.Reflection.Apparatus_AOT_Reflection_Playground_UserExtensions");
+            var extension = assembly.GetType("Apparatus.AOT.Reflection.ApparatusAOTReflectionPlaygroundUserExtensions");
             Assert.NotNull(extension);
 
             var method = extension.GetMethod("GetProperties", BindingFlags.Static | BindingFlags.Public);

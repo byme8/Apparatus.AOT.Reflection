@@ -1,100 +1,80 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
+using System.Threading;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Apparatus.AOT.Reflection.SourceGenerator.Reflection
 {
     [Generator]
-    public class AotEnumReflectionSourceGenerator : ISourceGenerator
+    public class AotEnumReflectionSourceGenerator : IIncrementalGenerator
     {
-        public void Initialize(GeneratorInitializationContext context)
+        public void Initialize(IncrementalGeneratorInitializationContext context)
         {
-            context.RegisterForSyntaxNotifications(() => new AotEnumReflectionSyntaxNotification());
+            var types = context.SyntaxProvider.CreateSyntaxProvider(
+                FindGetEnumValueInfo,
+                (syntaxContext, token) =>
+                {
+                    var invocation = (InvocationExpressionSyntax)syntaxContext.Node;
+                    var memberAccess = (MemberAccessExpressionSyntax)invocation.Expression;
+                    var possibleMethod = syntaxContext.SemanticModel.GetSymbolInfo(memberAccess.Name, token);
+                    if (possibleMethod.Symbol is not IMethodSymbol methodSymbol)
+                    {
+                        return null;
+                    }
+
+                    return methodSymbol.TypeArguments.First();
+                })
+                .WithComparer(SymbolEqualityComparer.Default);
+
+            
+            context.RegisterImplementationSourceOutput(types, Generate);
         }
 
-        public void Execute(GeneratorExecutionContext context)
+        private void Generate(SourceProductionContext context, ITypeSymbol typeToBake)
         {
-            if (!(context.SyntaxReceiver is AotEnumReflectionSyntaxNotification receiver))
+            if (typeToBake.TypeKind != TypeKind.Enum)
             {
                 return;
             }
 
-            if (!receiver.MemberAccess.Any())
+            var source = GenerateExtensionForEnum(typeToBake);
+            if (context.CancellationToken.IsCancellationRequested)
             {
                 return;
             }
-            
-            var extensionType = context.Compilation
-                .GetTypeByMetadataName("Apparatus.AOT.Reflection.AOTReflectionExtensions");
-            var extensionMethod = extensionType
-                .GetMembers()
-                .OfType<IMethodSymbol>()
-                .First(o => o.Name == "GetEnumValueInfo");
 
-            var enumHelper = context.Compilation
-                .GetTypeByMetadataName("Apparatus.AOT.Reflection.EnumHelper");
-            var enumHelperMethod = enumHelper
-                .GetMembers()
-                .OfType<IMethodSymbol>()
-                .First(o => o.Name == "GetEnumInfo");
+            context.AddSource(typeToBake.ToFileName(), source);
+        }
 
-            var processed = new HashSet<string>();
-            foreach (var memberAccess in receiver.MemberAccess)
+        private bool FindEnumReflectionUsage(SyntaxNode syntaxNode, CancellationToken cancellationToken)
+        {
+            if (syntaxNode is InvocationExpressionSyntax invocation &&
+                invocation.Expression is MemberAccessExpressionSyntax memberAccess &&
+                (memberAccess.Name.ToString() == "GetEnumValueInfo" ||
+                 memberAccess.Name is GenericNameSyntax genericNameSyntax &&
+                 genericNameSyntax.Identifier.ToString() == "GetEnumInfo"))
             {
-                if (context.CancellationToken.IsCancellationRequested)
-                {
-                    return;
-                }
-
-                var semanticModel = context.Compilation.GetSemanticModel(memberAccess.SyntaxTree);
-                var symbol = ModelExtensions.GetSymbolInfo(semanticModel, memberAccess.Name);
-                if (!(symbol.Symbol is IMethodSymbol methodSymbol))
-                {
-                    continue;
-                }
-
-                if (!SymbolEqualityComparer.Default.Equals(extensionMethod, methodSymbol.ReducedFrom) &&
-                    !SymbolEqualityComparer.Default.Equals(enumHelperMethod, methodSymbol.ConstructedFrom))
-                {
-                    continue;
-                }
-
-
-                if (context.CancellationToken.IsCancellationRequested)
-                {
-                    return;
-                }
-
-
-                var typeToBake = methodSymbol.TypeArguments.First();
-                if (processed.Contains(typeToBake.ToGlobalName()))
-                {
-                    continue;
-                }
-
-                if (typeToBake is ITypeParameterSymbol)
-                {
-                    continue;
-                }
-
-                if (typeToBake.TypeKind != TypeKind.Enum)
-                {
-                    continue;
-                }
-
-                var source = GenerateExtensionForEnum(typeToBake);
-                if (context.CancellationToken.IsCancellationRequested)
-                {
-                    return;
-                }
-
-                context.AddSource(typeToBake.ToFileName(), source);
-                processed.Add(typeToBake.ToGlobalName());
+                return true;
             }
+
+            return false;
+        }
+        
+        private bool FindGetEnumValueInfo(SyntaxNode syntaxNode, CancellationToken cancellationToken)
+        {
+            if (syntaxNode is InvocationExpressionSyntax invocation &&
+                invocation.Expression is MemberAccessExpressionSyntax memberAccess &&
+                memberAccess.Name.ToString() == "GetEnumValueInfo")
+            {
+                return true;
+            }
+
+            return false;
         }
 
         private string GenerateExtensionForEnum(ITypeSymbol typeToBake)
         {
+            var typeGlobalName = typeToBake.ToGlobalName();
             var source = $@"
 using System;
 using System.Linq;
@@ -102,21 +82,25 @@ using Apparatus.AOT.Reflection.Core.Stores;
 
 namespace Apparatus.AOT.Reflection
 {{
-    public static class {typeToBake.ToFileName()}
+    public static class {typeToBake.ToSafeGlobalName()}Extensions
     {{
         [global::System.Runtime.CompilerServices.ModuleInitializer]
         public static void Bootstrap()
         {{
-            EnumMetadataStore<{typeToBake.ToGlobalName()}>.Data = _lazy;
+            EnumMetadataStore<{typeGlobalName}>.Data = _lazy;
         }}
 
-        private static global::System.Lazy<global::System.Collections.Generic.IReadOnlyDictionary<{typeToBake.ToGlobalName()}, IEnumValueInfo<{typeToBake.ToGlobalName()}>>> _lazy = new global::System.Lazy<global::System.Collections.Generic.IReadOnlyDictionary<{typeToBake.ToGlobalName()}, IEnumValueInfo<{typeToBake.ToGlobalName()}>>>(new global::System.Collections.Generic.Dictionary<{typeToBake.ToGlobalName()}, IEnumValueInfo<{typeToBake.ToGlobalName()}>>
+        private static global::System.Lazy<global::System.Collections.Generic.IReadOnlyDictionary<{typeGlobalName}, IEnumValueInfo<{typeGlobalName}>>> _lazy = new global::System.Lazy<global::System.Collections.Generic.IReadOnlyDictionary<{typeGlobalName}, IEnumValueInfo<{typeGlobalName}>>>(new global::System.Collections.Generic.Dictionary<{typeGlobalName}, IEnumValueInfo<{typeGlobalName}>>
         {{
 {typeToBake
     .GetMembers()
     .OfType<IFieldSymbol>()
-    .Select(o => 
-$@"         {{ {typeToBake.ToGlobalName()}.{o.Name}, new EnumValueInfo<{typeToBake.ToGlobalName()}>(""{o.Name}"", {typeToBake.ToGlobalName()}.{o.Name}, new Attribute[] 
+    .Select(o => $@"
+            {{ {typeGlobalName}.{o.Name}, new EnumValueInfo<{typeGlobalName}>(
+                ""{o.Name}"", 
+                {o.ConstantValue},
+                {typeGlobalName}.{o.Name}, 
+                new Attribute[] 
                 {{ 
                     {o.GetAttributes().GenerateAttributes()}
                 }})

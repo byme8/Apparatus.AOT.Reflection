@@ -8,8 +8,11 @@ namespace Apparatus.AOT.Reflection
         where TEnum : Enum
     {
         string Name { get; }
+        
         Attribute[] Attributes { get; }
-
+        
+        int RawValue { get; }
+        
         TEnum Value { get; }
     }
 
@@ -74,15 +77,20 @@ namespace Apparatus.AOT.Reflection
             return !Equals(left, right);
         }
 
-        public EnumValueInfo(string name, TEnum value, Attribute[] attributes)
+        public EnumValueInfo(string name, int rawValue, TEnum value, Attribute[] attributes)
         {
             Name = name;
+            RawValue = rawValue;
             Attributes = attributes;
             Value = value;
         }
 
         public string Name { get; }
+        
+        public int RawValue { get; }
+
         public TEnum Value { get; }
+        
         public Attribute[] Attributes { get; }
     }
 }
