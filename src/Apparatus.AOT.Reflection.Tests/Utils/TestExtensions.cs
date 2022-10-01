@@ -1,114 +1,100 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.IO;
-using System.Linq;
+﻿using System.Collections.Immutable;
 using System.Reflection;
-using System.Threading.Tasks;
-using Apparatus.AOT.Reflection.Playground;
 using Apparatus.AOT.Reflection.SourceGenerator.KeyOf;
 using Apparatus.AOT.Reflection.SourceGenerator.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
-using Xunit;
 
-namespace Apparatus.AOT.Reflection.Tests.Utils
+namespace Apparatus.AOT.Reflection.Tests.Utils;
+
+public static class TestExtensions
 {
-    public static class TestExtensions
+    public static async Task<Project> ReplacePartOfDocumentAsync(this Project project,
+        string documentName,
+        string textToReplace,
+        string newText)
     {
-        public static async Task<Project> ReplacePartOfDocumentAsync(this Project project,
-            string documentName,
-            string textToReplace,
-            string newText)
+        var document = project.Documents.First(o => o.Name == documentName);
+        var text = await document.GetTextAsync();
+        return document
+            .WithText(SourceText.From(text.ToString().Replace(textToReplace, newText)))
+            .Project;
+    }
+
+    public static async Task<object> ExecuteTest(this Project project, string source)
+    {
+        project = await project.ReplacePartOfDocumentAsync(
+            "Program.cs",
+            ("return null; // place to place execute", source));
+
+        var assembly = await project.CompileToRealAssembly();
+
+        var extension = assembly.GetType("Apparatus.AOT.Reflection.Playground.Program");
+        Assert.NotNull(extension);
+
+        var method = extension.GetMethod("Execute", BindingFlags.Static | BindingFlags.Public);
+        Assert.NotNull(method);
+
+        return method.Invoke(null, null);
+    }
+
+    public static async Task<Project> ReplacePartOfDocumentAsync(this Project project,
+        string documentName,
+        params (string TextToReplace, string NewText)[] places)
+    {
+        foreach (var place in places)
         {
-            var document = project.Documents.First(o => o.Name == documentName);
-            var text = await document.GetTextAsync();
-            return document
-                .WithText(SourceText.From(text.ToString().Replace(textToReplace, newText)))
-                .Project;
+            project = await project.ReplacePartOfDocumentAsync(documentName, place.TextToReplace, place.NewText);
         }
 
-        public static async Task<IPropertyInfo[]> ExecutePropertiesTest(this Project project, User user = null)
+        return project;
+    }
+
+    public static async Task<Project> ReplacePartOfDocumentAsync(this Project project,
+        params (string ProjectName, string DocumentName, string TextToReplace, string NewText)[] places)
+    {
+        var solution = project.Solution;
+        foreach (var place in places)
         {
-            var assembly = await project.CompileToRealAssembly();
+            var newProject = await solution.Projects
+                .First(o => o.Name == place.ProjectName)
+                .ReplacePartOfDocumentAsync(place.DocumentName, (place.TextToReplace, place.NewText));
 
-            var extension = assembly.GetType("Apparatus.AOT.Reflection.ApparatusAOTReflectionPlaygroundUserExtensions");
-            Assert.NotNull(extension);
-
-            var method = extension.GetMethod("GetProperties", BindingFlags.Static | BindingFlags.Public);
-            Assert.NotNull(method);
-
-            var entries = (IReadOnlyDictionary<KeyOf<User>, IPropertyInfo>)method.Invoke(null, new[] { user ?? new User(), });
-
-            return entries.Values.ToArray();
+            solution = newProject.Solution;
         }
 
-        public static async Task<Project> ReplacePartOfDocumentAsync(this Project project,
-            string documentName,
-            params (string TextToReplace, string NewText)[] places)
-        {
-            foreach (var place in places)
+        return solution.Projects.First(o => o.Name == project.Name);
+    }
+
+    public static async Task<Assembly> CompileToRealAssembly(this Project project)
+    {
+        var compilation = await project.GetCompilationAsync();
+        var analyzerResults = await compilation
+            .WithAnalyzers(ImmutableArray.Create(new DiagnosticAnalyzer[]
             {
-                project = await project.ReplacePartOfDocumentAsync(documentName, place.TextToReplace, place.NewText);
-            }
+                new AOTReflectionAnalyzer(),
+                new IndexPropertyAnalyzer(),
+                new MethodPropertyAnalyzer(),
+                new DontUseKeyOfConstructorAnalyzer(),
+            }))
+            .GetAllDiagnosticsAsync();
 
-            return project;
+        var error = compilation.GetDiagnostics().Concat(analyzerResults)
+            .FirstOrDefault(o => o.Severity == DiagnosticSeverity.Error);
+
+        if (error != null)
+        {
+            throw new Exception(error.GetMessage());
         }
 
-        public static async Task<Project> ReplacePartOfDocumentAsync(this Project project,
-            params (string ProjectName, string DocumentName, string TextToReplace, string NewText)[] places)
+        using (var memoryStream = new MemoryStream())
         {
-            var solution = project.Solution;
-            foreach (var place in places)
-            {
-                var newProject = await solution.Projects
-                    .First(o => o.Name == place.ProjectName)
-                    .ReplacePartOfDocumentAsync(place.DocumentName, (place.TextToReplace, place.NewText));
+            compilation.Emit(memoryStream);
+            var bytes = memoryStream.ToArray();
+            var assembly = Assembly.Load(bytes);
 
-                solution = newProject.Solution;
-            }
-
-            return solution.Projects.First(o => o.Name == project.Name);
-        }
-
-        public static async Task Validate(this Project project)
-        {
-            var assembly = await project.CompileToRealAssembly();
-            var program = assembly.GetType("Apparatus.AOT.Reflection.Playground.Program");
-            var main = program!.GetMethod("Main", BindingFlags.Public | BindingFlags.Static);
-            main!.Invoke(null, new[] { (string[])null });
-        }
-
-        public static async Task<Assembly> CompileToRealAssembly(this Project project)
-        {
-            var compilation = await project.GetCompilationAsync();
-            var analyzerResults = await compilation
-                .WithAnalyzers(ImmutableArray.Create(new DiagnosticAnalyzer[]
-                {
-                    new AOTReflectionAnalyzer(),
-                    new IndexPropertyAnalyzer(),
-                    new MethodPropertyAnalyzer(),
-                    new DontUseKeyOfConstructorAnalyzer(),
-                }))
-                .GetAllDiagnosticsAsync();
-
-            var error = compilation.GetDiagnostics().Concat(analyzerResults)
-                .FirstOrDefault(o => o.Severity == DiagnosticSeverity.Error);
-
-            if (error != null)
-            {
-                throw new Exception(error.GetMessage());
-            }
-
-            using (var memoryStream = new MemoryStream())
-            {
-                compilation.Emit(memoryStream);
-                var bytes = memoryStream.ToArray();
-                var assembly = Assembly.Load(bytes);
-
-                return assembly;
-            }
+            return assembly;
         }
     }
 }

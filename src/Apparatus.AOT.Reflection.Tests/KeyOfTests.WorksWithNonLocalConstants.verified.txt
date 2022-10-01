@@ -1,0 +1,11 @@
+﻿{
+  Name: FirstName,
+  Attributes: [
+    {
+      AllowEmptyStrings: false,
+      RequiresValidationContext: false,
+      TypeId: RequiredAttribute
+    }
+  ],
+  PropertyType: string
+}

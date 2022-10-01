@@ -1,9 +1,9 @@
-using System.Threading.Tasks;
 using Apparatus.AOT.Reflection.Tests.Data;
 using Apparatus.AOT.Reflection.Tests.Utils;
-using Xunit;
+
 namespace Apparatus.AOT.Reflection.Tests;
 
+[UsesVerify]
 public class AOTReflectionAttributeTests
 {
     [Fact]
@@ -11,9 +11,10 @@ public class AOTReflectionAttributeTests
     {
         var project = await TestProject.Project.ReplacePartOfDocumentAsync(
             "Program.cs",
-            ("// place to replace 0", "[AOTReflection]public enum TestEnum { Value1, Value2 }"),
-            ("// place to replace 1", "EnumMetadataStore<TestEnum>.Data.Value.First();"));
+            ("// place to replace 0", "[AOTReflection]public enum TestEnum { Value2 = 2, Value3 = 3 }"));
 
-        await project.Validate();
-    } 
+        var expected = await project.ExecuteTest("return EnumMetadataStore<TestEnum>.Data.Value;");
+
+        await Verify(expected);
+    }
 }

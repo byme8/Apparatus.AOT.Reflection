@@ -4,10 +4,12 @@ using System.Linq;
 
 namespace Apparatus.AOT.Reflection.Core.Stores
 {
+#if DEBUG
     public static class Config
     {
         public static bool Testing { get; set; }
     }
+#endif
 
     public static class MetadataStore<T>
     {
@@ -17,7 +19,11 @@ namespace Apparatus.AOT.Reflection.Core.Stores
         {
             get
             {
-                if (data == null || Config.Testing)
+                if (data == null
+#if DEBUG
+                    || Config.Testing
+#endif
+                   )
                 {
                     var keys = TypedMetadataStore.Types[typeof(T)];
                     data = keys.ToDictionary(o => o.Key as KeyOf<T>, o => o.Value);

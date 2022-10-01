@@ -1,0 +1,10 @@
+﻿{
+  Apparatus.AOT.Reflection.KeyOf`1[Apparatus.AOT.Reflection.Playground.Admin]: {
+    Name: FirstName,
+    PropertyType: string
+  },
+  Apparatus.AOT.Reflection.KeyOf`1[Apparatus.AOT.Reflection.Playground.Admin]: {
+    Name: LastName,
+    PropertyType: string
+  }
+}

@@ -1,0 +1,24 @@
+﻿{
+  Apparatus.AOT.Reflection.KeyOf`1[Apparatus.AOT.Reflection.Playground.User]: {
+    Name: FirstName,
+    Attributes: [
+      {
+        AllowEmptyStrings: false,
+        RequiresValidationContext: false,
+        TypeId: RequiredAttribute
+      }
+    ],
+    PropertyType: string
+  },
+  Apparatus.AOT.Reflection.KeyOf`1[Apparatus.AOT.Reflection.Playground.User]: {
+    Name: LastName,
+    Attributes: [
+      {
+        AllowEmptyStrings: false,
+        RequiresValidationContext: false,
+        TypeId: RequiredAttribute
+      }
+    ],
+    PropertyType: string
+  }
+}

@@ -1,0 +1,12 @@
+﻿{
+  Value2: {
+    Name: Value2,
+    RawValue: 2,
+    Value: Value2
+  },
+  Value3: {
+    Name: Value3,
+    RawValue: 3,
+    Value: Value3
+  }
+}

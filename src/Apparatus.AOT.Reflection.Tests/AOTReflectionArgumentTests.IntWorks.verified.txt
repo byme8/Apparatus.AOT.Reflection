@@ -1,0 +1,28 @@
+﻿[
+  {
+    Name: FirstName,
+    Attributes: [
+      {
+        AllowEmptyStrings: false,
+        RequiresValidationContext: false,
+        TypeId: RequiredAttribute
+      },
+      {
+        Integer: 1,
+        TypeId: TestAttribute
+      }
+    ],
+    PropertyType: string
+  },
+  {
+    Name: LastName,
+    Attributes: [
+      {
+        AllowEmptyStrings: false,
+        RequiresValidationContext: false,
+        TypeId: RequiredAttribute
+      }
+    ],
+    PropertyType: string
+  }
+]

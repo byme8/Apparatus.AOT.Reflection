@@ -14,34 +14,12 @@ namespace Apparatus.AOT.Reflection.Playground
 
         public static void Main(string[] args)
         {
-            var user = new User(); // 1
-            // place to replace 1
+            // main
         }
 
-        private static void DontCall()
+        public static object Execute()
         {
-        }
-
-        public static IReadOnlyDictionary<KeyOf<User>, IPropertyInfo> GetUserInfo()
-        {
-            return GetInfo(new User());
-        }
-
-        public static IReadOnlyDictionary<KeyOf<T>, IPropertyInfo> GetInfo<T>(T value)
-        {
-            return value.GetProperties();
-        }
-
-        public static IEnumValueInfo<TEnum> GetEnumValueInfo<TEnum>(TEnum value)
-            where TEnum : Enum
-        {
-            return value.GetEnumValueInfo();
-        }
-
-        public static IEnumerable<IEnumValueInfo<TEnum>> GetEnumInfo<TEnum>()
-            where TEnum : Enum
-        {
-            return EnumHelper.GetEnumInfo<TEnum>();
+            return null; // place to place execute
         }
     }
 }

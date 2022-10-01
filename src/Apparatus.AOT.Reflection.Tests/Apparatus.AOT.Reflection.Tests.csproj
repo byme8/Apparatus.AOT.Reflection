@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
-
+        <ImplicitUsings>enable</ImplicitUsings>
         <IsPackable>false</IsPackable>
     </PropertyGroup>
 
@@ -23,7 +23,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Apparatus.AOT.Reflection.Playground.Core\Apparatus.AOT.Reflection.Playground.Core.csproj" />
         <ProjectReference Include="..\Apparatus.AOT.Reflection.Core\Apparatus.AOT.Reflection.Core.csproj" />
         <ProjectReference Include="..\Apparatus.AOT.Reflection.SourceGenerator\Apparatus.AOT.Reflection.SourceGenerator.csproj" />
     </ItemGroup>

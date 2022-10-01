@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Immutable;
+using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -10,57 +11,64 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.Reflection
     {
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
-            var typesFromDeclarations = context.SyntaxProvider.CreateSyntaxProvider(
-                FindAOTReflectionAttributeOnType,
-                (syntaxContext, token) =>
-                {
-                    var baseDeclaration = (BaseTypeDeclarationSyntax)syntaxContext.Node;
-                    var possibleType = syntaxContext.SemanticModel.GetDeclaredSymbol(baseDeclaration);
-                    if (possibleType is not ITypeSymbol typeSymbol)
+            var types = context.SyntaxProvider.CreateSyntaxProvider(
+                    FindAOTReflectionAttributeOnType,
+                    (syntaxContext, token) =>
                     {
-                        return null;
-                    }
-
-                    return typeSymbol;
-                })
-                .Where(o => o is not null)
-                .WithComparer(SymbolEqualityComparer.Default);;
-            
-            var typesFromInvocations = context.SyntaxProvider.CreateSyntaxProvider(
-                FindGetEnumValueInfo,
-                (syntaxContext, token) =>
-                {
-                    var invocation = (InvocationExpressionSyntax)syntaxContext.Node;
-                    var memberAccess = (MemberAccessExpressionSyntax)invocation.Expression;
-                    var possibleMethod = syntaxContext.SemanticModel.GetSymbolInfo(memberAccess.Name, token);
-                    if (possibleMethod.Symbol is not IMethodSymbol methodSymbol)
-                    {
-                        return null;
-                    }
-
-                    return methodSymbol.TypeArguments.First();
-                })
+                        return syntaxContext.Node switch
+                        {
+                            BaseTypeDeclarationSyntax baseTypeDeclarationSyntax => GetTypeFromBaseDeclaration(syntaxContext, baseTypeDeclarationSyntax, token),
+                            InvocationExpressionSyntax invocationExpressionSyntax => GetTypeFromInvocation(syntaxContext, invocationExpressionSyntax, token),
+                            _ => null
+                        };
+                    })
                 .Where(o => o is not null)
                 .WithComparer(SymbolEqualityComparer.Default);
-            
-            context.RegisterImplementationSourceOutput(typesFromDeclarations, Generate);
-            context.RegisterImplementationSourceOutput(typesFromInvocations, Generate);
+
+
+            context.RegisterImplementationSourceOutput(types.Collect(), Generate!);
         }
 
-        private void Generate(SourceProductionContext context, ITypeSymbol typeToBake)
+        private static ITypeSymbol? GetTypeFromInvocation(GeneratorSyntaxContext syntaxContext, InvocationExpressionSyntax invocation, CancellationToken token)
         {
-            if (typeToBake.TypeKind != TypeKind.Enum)
+            var memberAccess = (MemberAccessExpressionSyntax)invocation.Expression;
+            var possibleMethod = syntaxContext.SemanticModel.GetSymbolInfo(memberAccess.Name, token);
+            if (possibleMethod.Symbol is not IMethodSymbol methodSymbol)
             {
-                return;
+                return null;
             }
+            return methodSymbol.TypeArguments.First();
+        }
 
-            var source = GenerateExtensionForEnum(typeToBake);
-            if (context.CancellationToken.IsCancellationRequested)
+        private static ITypeSymbol? GetTypeFromBaseDeclaration(GeneratorSyntaxContext syntaxContext, BaseTypeDeclarationSyntax baseDeclaration, CancellationToken token)
+        {
+            var possibleType = syntaxContext.SemanticModel.GetDeclaredSymbol(baseDeclaration, token);
+            if (possibleType is not ITypeSymbol { TypeKind: TypeKind.Enum } typeSymbol)
             {
-                return;
+                return null;
             }
+            return typeSymbol;
+        }
 
-            context.AddSource(typeToBake.ToFileName(), source);
+        private void Generate(SourceProductionContext context, ImmutableArray<ITypeSymbol> types)
+        {
+            var uniqueTypes = types.ToImmutableHashSet<ITypeSymbol>(SymbolEqualityComparer.Default);
+
+            foreach (var type in uniqueTypes)
+            {
+                if (type.TypeKind != TypeKind.Enum)
+                {
+                    continue;
+                }
+
+                var source = GenerateExtensionForEnum(type);
+                if (context.CancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                context.AddSource(type.ToFileName(), source);
+            }
         }
 
         private bool FindAOTReflectionAttributeOnType(SyntaxNode syntaxNode, CancellationToken cancellationToken)
@@ -73,13 +81,7 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.Reflection
                 return true;
             }
 
-            return false;
-        }
-        
-        private bool FindGetEnumValueInfo(SyntaxNode syntaxNode, CancellationToken cancellationToken)
-        {
-            if (syntaxNode is InvocationExpressionSyntax invocation &&
-                invocation.Expression is MemberAccessExpressionSyntax memberAccess &&
+            if (syntaxNode is InvocationExpressionSyntax { Expression: MemberAccessExpressionSyntax memberAccess } &&
                 memberAccess.Name.ToString() == "GetEnumValueInfo")
             {
                 return true;

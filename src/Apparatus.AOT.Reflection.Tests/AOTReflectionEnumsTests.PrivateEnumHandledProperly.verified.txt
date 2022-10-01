@@ -1,0 +1,5 @@
+﻿{
+  Name: Value2,
+  RawValue: 2,
+  Value: Value2
+}
