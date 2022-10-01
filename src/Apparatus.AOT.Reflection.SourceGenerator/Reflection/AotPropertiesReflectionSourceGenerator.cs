@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Apparatus.AOT.Reflection.SourceGenerator.KeyOf;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -8,122 +10,159 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace Apparatus.AOT.Reflection.SourceGenerator.Reflection
 {
     [Generator]
-    public class AotPropertiesReflectionSourceGenerator : ISourceGenerator
+    public class AotPropertiesReflectionSourceGenerator : IIncrementalGenerator
     {
-        public void Execute(GeneratorExecutionContext context)
+        public void Initialize(IncrementalGeneratorInitializationContext context)
         {
-            if (!(context.SyntaxReceiver is AotPropertiesReflectionSyntaxNotification receiver))
+            var types = context.SyntaxProvider.CreateSyntaxProvider(
+                    FindClasses,
+                    (syntaxContext, token) => syntaxContext.Node switch
+                    {
+                        GenericNameSyntax genericNameSyntax => GetTypeFromGenericNameSyntax(syntaxContext, genericNameSyntax, token),
+                        InvocationExpressionSyntax invocationExpressionSyntax => GetTypeFromInvocation(syntaxContext, invocationExpressionSyntax, token),
+                        AttributeSyntax attributeSyntax => GetTypeFromAttribute(syntaxContext, attributeSyntax, token),
+                        _ => null
+                    })
+                .SelectMany((o, c) => o)
+                .Where(o => o != null)
+                .WithComparer(SymbolEqualityComparer.Default);
+
+            context.RegisterSourceOutput(types.Collect(), Generate!);
+        }
+
+        private IEnumerable<ITypeSymbol?> GetTypeFromAttribute(GeneratorSyntaxContext syntaxContext, AttributeSyntax attributeSyntax, CancellationToken token)
+        {
+            if (attributeSyntax.Parent is not AttributeListSyntax { Parent: BaseTypeDeclarationSyntax baseTypeDeclarationSyntax })
             {
-                return;
+                yield break;
+            }
+            
+            var possibleType = syntaxContext.SemanticModel.GetDeclaredSymbol(baseTypeDeclarationSyntax, token);
+            if (possibleType is ITypeSymbol type)
+            {
+                yield return type;
+            }
+        }
+
+        private IEnumerable<ITypeSymbol?> GetTypeFromInvocation(GeneratorSyntaxContext syntaxContext, InvocationExpressionSyntax invocationExpressionSyntax, CancellationToken token)
+        {
+            var possibleMethod = syntaxContext.SemanticModel.GetSymbolInfo(invocationExpressionSyntax, token);
+            if (possibleMethod.Symbol is not IMethodSymbol methodSymbol)
+            {
+                yield break;
             }
 
-            var extensionType = context.Compilation
+            yield return HandleGetProperties(syntaxContext, methodSymbol);
+
+            var keyOfs = HandleKeyofs(syntaxContext, methodSymbol);
+            foreach (var keyOf in keyOfs)
+            {
+                yield return keyOf;
+            }
+        }
+
+        private IEnumerable<ITypeSymbol?> HandleKeyofs(GeneratorSyntaxContext syntaxContext, IMethodSymbol methodSymbol)
+        {
+            var keyOf = syntaxContext.SemanticModel.Compilation
+                .GetTypeByMetadataName("Apparatus.AOT.Reflection.KeyOf`1");
+
+            if (methodSymbol.ReturnType is INamedTypeSymbol namedTypeSymbol &&
+                namedTypeSymbol.ConstructedFrom.Equals(keyOf, SymbolEqualityComparer.Default))
+            {
+                var typeArgument = namedTypeSymbol.TypeArguments.First();
+                yield return typeArgument;
+            }
+            
+            foreach (var parameter in methodSymbol.Parameters)
+            {
+                if (parameter.Type is INamedTypeSymbol parameterType &&
+                    parameterType.ConstructedFrom.Equals(keyOf, SymbolEqualityComparer.Default))
+                {
+                    var typeArgument = parameterType.TypeArguments.First();
+                    yield return typeArgument;
+                }
+            }
+        }
+
+        private static ITypeSymbol? HandleGetProperties(GeneratorSyntaxContext syntaxContext, IMethodSymbol methodSymbol)
+        {
+            var extensionType = syntaxContext.SemanticModel.Compilation
                 .GetTypeByMetadataName("Apparatus.AOT.Reflection.AOTReflectionExtensions");
             var extensionMethod = extensionType?
                 .GetMembers()
                 .OfType<IMethodSymbol>()
-                .First(o => o.Name == "GetProperties");
+                .FirstOrDefault(o => o.Name == "GetProperties");
 
-            var typesToBake = AnalyzeInvocations().Concat(AnalyzeTypes())
-                .Where(o => o != null)
-                .Where(o => o.Kind == SymbolKind.NamedType)
-                .Distinct(SymbolEqualityComparer.Default);
-
-            var processed = new HashSet<string>();
-            foreach (var typeToBake in typesToBake.OfType<ITypeSymbol>())
+            if (!SymbolEqualityComparer.Default.Equals(extensionMethod, methodSymbol.ReducedFrom))
             {
-                if (context.CancellationToken.IsCancellationRequested)
-                {
-                    return;
-                }
-
-                if (processed.Contains(typeToBake.ToGlobalName()))
-                {
-                    continue;
-                }
-
-                if (typeToBake is ITypeParameterSymbol)
-                {
-                    continue;
-                }
-
-                if (typeToBake.TypeKind == TypeKind.Enum)
-                {
-                    continue;
-                }
-
-                var source = GenerateExtensionForProperties(typeToBake);
-                if (context.CancellationToken.IsCancellationRequested)
-                {
-                    return;
-                }
-
-                context.AddSource(typeToBake.ToFileName(), source);
-                processed.Add(typeToBake.ToGlobalName());
+                return null;
             }
 
-            IEnumerable<ISymbol> AnalyzeInvocations()
-                => receiver.Invocations.SelectMany(o =>
-                {
-                    var methodSymbol = GetMethodSymbol(context, o);
-                    if (methodSymbol is null)
-                    {
-                        return Enumerable.Empty<ITypeSymbol>();
-                    }
-
-                    if (SymbolEqualityComparer.Default.Equals(extensionMethod, methodSymbol.ReducedFrom))
-                    {
-                        return new[] { methodSymbol.TypeArguments.First() };
-                    }
-
-                    if (context.CancellationToken.IsCancellationRequested)
-                    {
-                        return Enumerable.Empty<ITypeSymbol>();
-                    }
-
-                    var keyofs = methodSymbol.Parameters
-                        .Select(param => param.Type as INamedTypeSymbol)
-                        .Where(param => param != null && KeyOfAnalyzer.IsKeyOf(param));
-
-                    return keyofs.Select(keyof => keyof.TypeArguments.First());
-                });
-
-            IEnumerable<ISymbol> AnalyzeTypes()
-                => receiver.GenericNames.Select(o =>
-                {
-                    var semanticModel = context.Compilation.GetSemanticModel(o.SyntaxTree);
-                    var symbol = semanticModel
-                        .GetSpeculativeSymbolInfo(o.SpanStart, o, SpeculativeBindingOption.BindAsTypeOrNamespace);
-
-                    if (symbol.Symbol is INamedTypeSymbol typeSymbol && KeyOfAnalyzer.IsKeyOf(typeSymbol))
-                    {
-                        return typeSymbol.TypeArguments.First();
-                    }
-
-                    return null;
-                });
+            return methodSymbol.TypeArguments.First();
         }
 
-        private static IMethodSymbol GetMethodSymbol(GeneratorExecutionContext context, InvocationExpressionSyntax invocation)
+        private IEnumerable<ITypeSymbol?> GetTypeFromGenericNameSyntax(GeneratorSyntaxContext syntaxContext, GenericNameSyntax genericNameSyntax, CancellationToken token)
         {
-            var semanticModel = context.Compilation.GetSemanticModel(invocation.SyntaxTree);
-            if (invocation.Expression is MemberAccessExpressionSyntax memberAccess)
+            var possibleType = syntaxContext.SemanticModel.GetSymbolInfo(genericNameSyntax, token);
+            if (possibleType.Symbol is not INamedTypeSymbol type)
             {
-                var memberSymbol = semanticModel.GetSymbolInfo(memberAccess.Name);
-                if (memberSymbol.Symbol is IMethodSymbol memberMethodSymbol)
-                {
-                    return memberMethodSymbol;
-                }
+                yield break;
             }
+            
+            var keyOf = syntaxContext.SemanticModel.Compilation
+                .GetTypeByMetadataName("Apparatus.AOT.Reflection.KeyOf`1");
 
-            var symbol = semanticModel.GetSymbolInfo(invocation.Expression);
-            if (symbol.Symbol is IMethodSymbol methodSymbol)
+            if (!SymbolEqualityComparer.Default.Equals(type.OriginalDefinition, keyOf))
             {
-                return methodSymbol;
+                yield break;
             }
-
-            return null;
+                
+            yield return type.TypeArguments.First();
         }
+
+        private void Generate(SourceProductionContext context, ImmutableArray<ITypeSymbol> types)
+        {
+            var uniqueTypes = types.ToImmutableHashSet<ITypeSymbol>(SymbolEqualityComparer.Default);
+            foreach (var type in uniqueTypes)
+            {
+                if (context.CancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                if (type is ITypeParameterSymbol)
+                {
+                    continue;
+                }
+                
+                if (type is IErrorTypeSymbol)
+                {
+                    continue;
+                }
+
+                if (type.TypeKind == TypeKind.Enum)
+                {
+                    continue;
+                }
+
+                var source = GenerateExtensionForProperties(type);
+                if (context.CancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                context.AddSource(type.ToFileName(), source);
+            }
+        }
+
+        private bool FindClasses(SyntaxNode syntaxNode, CancellationToken cancellationToken)
+            => syntaxNode switch
+            {
+                InvocationExpressionSyntax => true,
+                GenericNameSyntax { Identifier.Text: "KeyOf" } => true,
+                AttributeSyntax attributeSyntax => attributeSyntax.Name.ToString().Contains("AOTReflection"),
+                _ => false
+            };
 
         private string GenerateExtensionForProperties(ITypeSymbol typeToBake)
         {
@@ -187,22 +226,12 @@ namespace Apparatus.AOT.Reflection
         }
 
         private string GetVisibility(ITypeSymbol typeToBake)
-        {
-            switch (typeToBake.DeclaredAccessibility)
+            => typeToBake.DeclaredAccessibility switch
             {
-                case Accessibility.Public:
-                    return "public";
-                case Accessibility.Internal:
-                    return "internal";
-                default:
-                    return "private";
-            }
-        }
-
-        public void Initialize(GeneratorInitializationContext context)
-        {
-            context.RegisterForSyntaxNotifications(() => new AotPropertiesReflectionSyntaxNotification());
-        }
+                Accessibility.Public => "public",
+                Accessibility.Internal => "internal",
+                _ => "private"
+            };
 
         private string GenerateGetterAndSetter(IPropertySymbol propertySymbol)
         {

@@ -17,4 +17,16 @@ public class AOTReflectionAttributeTests
 
         await Verify(expected);
     }
+    
+    [Fact]
+    public async Task ClassWithAttributeDetected()
+    {
+        var project = await TestProject.Project.ReplacePartOfDocumentAsync(
+            "Program.cs",
+            ("// place to replace 0", "[AOTReflection]public class TestClass { public string Value { get; set; } }"));
+
+        var expected = await project.ExecuteTest("return MetadataStore<TestClass>.Data;");
+
+        await Verify(expected);
+    }
 }

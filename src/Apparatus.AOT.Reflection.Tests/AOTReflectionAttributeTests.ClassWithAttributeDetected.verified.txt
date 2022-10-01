@@ -1,0 +1,6 @@
+﻿{
+  Apparatus.AOT.Reflection.KeyOf`1[Apparatus.AOT.Reflection.Playground.TestClass]: {
+    Name: Value,
+    PropertyType: string
+  }
+}

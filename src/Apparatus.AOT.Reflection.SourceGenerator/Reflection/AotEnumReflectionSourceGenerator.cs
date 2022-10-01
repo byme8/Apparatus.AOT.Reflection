@@ -13,41 +13,17 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.Reflection
         {
             var types = context.SyntaxProvider.CreateSyntaxProvider(
                     FindAOTReflectionAttributeOnType,
-                    (syntaxContext, token) =>
+                    (syntaxContext, token) => syntaxContext.Node switch
                     {
-                        return syntaxContext.Node switch
-                        {
-                            BaseTypeDeclarationSyntax baseTypeDeclarationSyntax => GetTypeFromBaseDeclaration(syntaxContext, baseTypeDeclarationSyntax, token),
-                            InvocationExpressionSyntax invocationExpressionSyntax => GetTypeFromInvocation(syntaxContext, invocationExpressionSyntax, token),
-                            _ => null
-                        };
+                        BaseTypeDeclarationSyntax baseTypeDeclarationSyntax => GetTypeFromBaseDeclaration(syntaxContext, baseTypeDeclarationSyntax, token),
+                        InvocationExpressionSyntax invocationExpressionSyntax => GetTypeFromInvocation(syntaxContext, invocationExpressionSyntax, token),
+                        _ => null
                     })
                 .Where(o => o is not null)
                 .WithComparer(SymbolEqualityComparer.Default);
 
 
             context.RegisterImplementationSourceOutput(types.Collect(), Generate!);
-        }
-
-        private static ITypeSymbol? GetTypeFromInvocation(GeneratorSyntaxContext syntaxContext, InvocationExpressionSyntax invocation, CancellationToken token)
-        {
-            var memberAccess = (MemberAccessExpressionSyntax)invocation.Expression;
-            var possibleMethod = syntaxContext.SemanticModel.GetSymbolInfo(memberAccess.Name, token);
-            if (possibleMethod.Symbol is not IMethodSymbol methodSymbol)
-            {
-                return null;
-            }
-            return methodSymbol.TypeArguments.First();
-        }
-
-        private static ITypeSymbol? GetTypeFromBaseDeclaration(GeneratorSyntaxContext syntaxContext, BaseTypeDeclarationSyntax baseDeclaration, CancellationToken token)
-        {
-            var possibleType = syntaxContext.SemanticModel.GetDeclaredSymbol(baseDeclaration, token);
-            if (possibleType is not ITypeSymbol { TypeKind: TypeKind.Enum } typeSymbol)
-            {
-                return null;
-            }
-            return typeSymbol;
         }
 
         private void Generate(SourceProductionContext context, ImmutableArray<ITypeSymbol> types)
@@ -69,6 +45,27 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.Reflection
 
                 context.AddSource(type.ToFileName(), source);
             }
+        }
+
+        private static ITypeSymbol? GetTypeFromInvocation(GeneratorSyntaxContext syntaxContext, InvocationExpressionSyntax invocation, CancellationToken token)
+        {
+            var memberAccess = (MemberAccessExpressionSyntax)invocation.Expression;
+            var possibleMethod = syntaxContext.SemanticModel.GetSymbolInfo(memberAccess.Name, token);
+            if (possibleMethod.Symbol is not IMethodSymbol methodSymbol)
+            {
+                return null;
+            }
+            return methodSymbol.TypeArguments.First();
+        }
+
+        private static ITypeSymbol? GetTypeFromBaseDeclaration(GeneratorSyntaxContext syntaxContext, BaseTypeDeclarationSyntax baseDeclaration, CancellationToken token)
+        {
+            var possibleType = syntaxContext.SemanticModel.GetDeclaredSymbol(baseDeclaration, token);
+            if (possibleType is not ITypeSymbol { TypeKind: TypeKind.Enum } typeSymbol)
+            {
+                return null;
+            }
+            return typeSymbol;
         }
 
         private bool FindAOTReflectionAttributeOnType(SyntaxNode syntaxNode, CancellationToken cancellationToken)

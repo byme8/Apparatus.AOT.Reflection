@@ -27,4 +27,13 @@
         <ProjectReference Include="..\Apparatus.AOT.Reflection.SourceGenerator\Apparatus.AOT.Reflection.SourceGenerator.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="AOTReflectionPropertiesTests.ExecuteGetterOnWrongType.verified.txt">
+        <DependentUpon>AOTReflectionPropertiesTests.cs</DependentUpon>
+      </None>
+      <None Update="AOTReflectionAttributeTests.ClassWithAttributeDetected.verified.txt">
+        <DependentUpon>AOTReflectionAttributeTests.cs</DependentUpon>
+      </None>
+    </ItemGroup>
+
 </Project>
