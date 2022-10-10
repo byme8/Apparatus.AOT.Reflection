@@ -1,25 +1,38 @@
 ﻿using System;
 using System.Collections.Generic;
+using Apparatus.AOT.Reflection;
 using Apparatus.AOT.Reflection.Core.Stores;
 
-namespace Apparatus.AOT.Reflection
+// ReSharper disable once CheckNamespace
+// ReSharper disable once InconsistentNaming
+public static class AOTReflectionExtensions
 {
-    public static class AOTReflectionExtensions
+    public static IReadOnlyDictionary<KeyOf<TValue>, IPropertyInfo> GetProperties<TValue>(this TValue value) =>
+        AOTReflection.GetProperties<TValue>();
+
+    public static IEnumValueInfo<TEnum> GetEnumValueInfo<TEnum>(this TEnum value)
+        where TEnum : Enum
     {
-        public static IReadOnlyDictionary<KeyOf<TValue>, IPropertyInfo> GetProperties<TValue>(this TValue value) =>
-            AOTReflection.GetProperties<TValue>();
-
-        public static IEnumValueInfo<TEnum> GetEnumValueInfo<TEnum>(this TEnum value)
-            where TEnum : Enum
+        var data = EnumMetadataStore<TEnum>.Data;
+        if (data is null)
         {
-            var data = EnumMetadataStore<TEnum>.Data;
-            if (data is null)
-            {
-                throw new InvalidOperationException(
-                    $"Type '{typeof(TEnum).FullName}' is not registered. Use 'Apparatus.AOT.Reflection.GenericHelper.Bootstrap' to bootstrap it.");
-            }
-
-            return data.Value[value];
+            ExceptionHelper.ThrowTypeIsNotBootstrapped(typeof(TEnum));
+            return default;
         }
+
+        return data.Value[value];
+    }
+
+    public static int ToInt<TEnum>(this TEnum value)
+        where TEnum : Enum
+    {
+        var func = EnumIntStore<TEnum>.GetValue;
+        if (func is null)
+        {
+            ExceptionHelper.ThrowTypeIsNotBootstrapped(typeof(TEnum));
+            return -1;
+        }
+
+        return func(value);
     }
 }

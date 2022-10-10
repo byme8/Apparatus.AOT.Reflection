@@ -87,7 +87,7 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.Reflection
         private static ITypeSymbol? HandleGetProperties(GeneratorSyntaxContext syntaxContext, IMethodSymbol methodSymbol)
         {
             var extensionType = syntaxContext.SemanticModel.Compilation
-                .GetTypeByMetadataName("Apparatus.AOT.Reflection.AOTReflectionExtensions");
+                .GetTypeByMetadataName("AOTReflectionExtensions");
             var extensionMethod = extensionType?
                 .GetMembers()
                 .OfType<IMethodSymbol>()

@@ -47,4 +47,16 @@ public class AOTReflectionEnumsTests : Test
 
         await Verify(expected);
     }
+    
+    [Fact]
+    public async Task ToIntWorks()
+    {
+        var project = await TestProject.Project.ReplacePartOfDocumentAsync(
+            "Program.cs",
+            ("// place to replace 0", "enum TestEnum { Value2 = 2, Value3 = 3 }"));
+
+        var expected = await project.ExecuteTest("return TestEnum.Value2.ToInt();");
+
+        await Verify(expected);
+    }
 }

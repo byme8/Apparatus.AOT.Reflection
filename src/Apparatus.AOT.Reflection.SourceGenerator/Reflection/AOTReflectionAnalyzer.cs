@@ -27,9 +27,9 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.Reflection
                 memberAccess.Name.ToString() == "GetProperties")
             {
                 var extensionType =
-                    context.Compilation.GetTypeByMetadataName("Apparatus.AOT.Reflection.AOTReflectionExtensions");
+                    context.Compilation.GetTypeByMetadataName("AOTReflectionExtensions");
                 var extensionMethod =
-                    extensionType.GetMembers().OfType<IMethodSymbol>().First(o => o.Name == "GetProperties");
+                    extensionType!.GetMembers().OfType<IMethodSymbol>().First(o => o.Name == "GetProperties");
                 
                 var semanticModel = context.SemanticModel;
                 var symbol = ModelExtensions.GetSymbolInfo(semanticModel, memberAccess.Name);

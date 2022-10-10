@@ -79,7 +79,7 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.Reflection
             }
 
             if (syntaxNode is InvocationExpressionSyntax { Expression: MemberAccessExpressionSyntax memberAccess } &&
-                memberAccess.Name.ToString() == "GetEnumValueInfo")
+                memberAccess.Name.ToString() is "GetEnumValueInfo" or "ToInt")
             {
                 return true;
             }
@@ -90,6 +90,11 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.Reflection
         private string GenerateExtensionForEnum(ITypeSymbol typeToBake)
         {
             var typeGlobalName = typeToBake.ToGlobalName();
+            var fields = typeToBake
+                .GetMembers()
+                .OfType<IFieldSymbol>()
+                .ToArray();
+            
             var source = $@"
 using System;
 using System.Linq;
@@ -103,14 +108,19 @@ namespace Apparatus.AOT.Reflection
         public static void Bootstrap()
         {{
             EnumMetadataStore<{typeGlobalName}>.Data = _lazy;
+            EnumIntStore<{typeGlobalName}>.GetValue = ToInt;
         }}
+
+        private static int ToInt({typeGlobalName} value)
+            => value switch 
+            {{
+{fields.Select(o => $"              {typeGlobalName}.{o.Name} => {o.ConstantValue},").JoinWithNewLine()}
+                _ => throw new ArgumentOutOfRangeException(nameof(value), value, null)
+            }};
 
         private static global::System.Lazy<global::System.Collections.Generic.IReadOnlyDictionary<{typeGlobalName}, IEnumValueInfo<{typeGlobalName}>>> _lazy = new global::System.Lazy<global::System.Collections.Generic.IReadOnlyDictionary<{typeGlobalName}, IEnumValueInfo<{typeGlobalName}>>>(new global::System.Collections.Generic.Dictionary<{typeGlobalName}, IEnumValueInfo<{typeGlobalName}>>
         {{
-{typeToBake
-    .GetMembers()
-    .OfType<IFieldSymbol>()
-    .Select(o => $@"
+{fields.Select(o => $@"
             {{ {typeGlobalName}.{o.Name}, new EnumValueInfo<{typeGlobalName}>(
                 ""{o.Name}"", 
                 {o.ConstantValue},
@@ -128,5 +138,7 @@ namespace Apparatus.AOT.Reflection
 ";
             return source;
         }
+        
+        
     }
 }

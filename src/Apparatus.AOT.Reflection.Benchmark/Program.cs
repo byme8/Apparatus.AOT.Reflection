@@ -54,20 +54,17 @@ namespace Apparatus.AOT.Reflection.Benchmark
 
     public class EnumToIntBenchmark
     {
-        public static int ConvertToInt<TValue>(TValue value) where TValue : Enum => Convert.ToInt32(value);
+        [Benchmark]
+        public int Covert() => Convert.ToInt32(UserKind.Admin);
         
-        public static int CastToInt<TValue>(TValue value) where TValue : Enum => (int)(object)value;
-        
-        public static int AOTToInt<TValue>([AOTReflection]TValue value) where TValue : Enum => value.GetEnumValueInfo().RawValue;
+        [Benchmark]
+        public int Cast() => (int)(object)(UserKind.Admin);
 
         [Benchmark]
-        public int Covert() => ConvertToInt(UserKind.Admin);
+        public int AOTOld() => UserKind.Admin.GetEnumValueInfo().RawValue;
         
         [Benchmark]
-        public int Cast() => CastToInt(UserKind.Admin);
-        
-        [Benchmark]
-        public int AOT() => AOTToInt(UserKind.Admin);
+        public int AOTNew() => UserKind.Admin.ToInt();
     }
     
     [MemoryDiagnoser()]

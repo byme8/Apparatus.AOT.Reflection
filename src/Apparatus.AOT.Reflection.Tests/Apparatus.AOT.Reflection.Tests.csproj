@@ -34,6 +34,9 @@
       <None Update="AOTReflectionAttributeTests.ClassWithAttributeDetected.verified.txt">
         <DependentUpon>AOTReflectionAttributeTests.cs</DependentUpon>
       </None>
+      <None Update="AOTReflectionEnumsTests.ToIntWorks.verified.txt">
+        <DependentUpon>AOTReflectionEnumsTests.cs</DependentUpon>
+      </None>
     </ItemGroup>
 
 </Project>
