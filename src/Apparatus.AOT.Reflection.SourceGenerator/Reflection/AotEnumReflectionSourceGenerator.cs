@@ -55,6 +55,7 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.Reflection
             {
                 return null;
             }
+
             return methodSymbol.TypeArguments.First();
         }
 
@@ -65,6 +66,7 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.Reflection
             {
                 return null;
             }
+
             return typeSymbol;
         }
 
@@ -84,6 +86,18 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.Reflection
                 return true;
             }
 
+            if (syntaxNode is InvocationExpressionSyntax
+                {
+                    Expression: MemberAccessExpressionSyntax
+                    {
+                        Expression: IdentifierNameSyntax { Identifier.Text: "EnumHelper" },
+                        Name: GenericNameSyntax { Identifier.Text: "GetEnumInfo" or "FromInt" }
+                    }
+                })
+            {
+                return true;
+            }
+
             return false;
         }
 
@@ -94,7 +108,7 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.Reflection
                 .GetMembers()
                 .OfType<IFieldSymbol>()
                 .ToArray();
-            
+
             var source = $@"
 using System;
 using System.Linq;
@@ -102,21 +116,13 @@ using Apparatus.AOT.Reflection.Core.Stores;
 
 namespace Apparatus.AOT.Reflection
 {{
-    public static class {typeToBake.ToSafeGlobalName()}Extensions
+    internal static class {typeToBake.ToSafeGlobalName()}Extensions
     {{
         [global::System.Runtime.CompilerServices.ModuleInitializer]
         public static void Bootstrap()
         {{
             EnumMetadataStore<{typeGlobalName}>.Data = _lazy;
-            EnumIntStore<{typeGlobalName}>.GetValue = ToInt;
         }}
-
-        private static int ToInt({typeGlobalName} value)
-            => value switch 
-            {{
-{fields.Select(o => $"              {typeGlobalName}.{o.Name} => {o.ConstantValue},").JoinWithNewLine()}
-                _ => throw new ArgumentOutOfRangeException(nameof(value), value, null)
-            }};
 
         private static global::System.Lazy<global::System.Collections.Generic.IReadOnlyDictionary<{typeGlobalName}, IEnumValueInfo<{typeGlobalName}>>> _lazy = new global::System.Lazy<global::System.Collections.Generic.IReadOnlyDictionary<{typeGlobalName}, IEnumValueInfo<{typeGlobalName}>>>(new global::System.Collections.Generic.Dictionary<{typeGlobalName}, IEnumValueInfo<{typeGlobalName}>>
         {{
@@ -138,7 +144,5 @@ namespace Apparatus.AOT.Reflection
 ";
             return source;
         }
-        
-        
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Apparatus.AOT.Reflection;
 using Apparatus.AOT.Reflection.Core.Stores;
 
@@ -23,16 +24,10 @@ public static class AOTReflectionExtensions
         return data.Value[value];
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int ToInt<TEnum>(this TEnum value)
         where TEnum : Enum
     {
-        var func = EnumIntStore<TEnum>.GetValue;
-        if (func is null)
-        {
-            ExceptionHelper.ThrowTypeIsNotBootstrapped(typeof(TEnum));
-            return -1;
-        }
-
-        return func(value);
+        return Unsafe.As<TEnum, int>(ref value);
     }
 }

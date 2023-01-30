@@ -1,16 +1,12 @@
 ﻿[
   {
-    Name: User
+    Name: Value2,
+    RawValue: 2,
+    Value: Value2
   },
   {
-    Name: Admin,
-    RawValue: 1,
-    Value: Admin,
-    Attributes: [
-      {
-        Description: Admin user,
-        TypeId: DescriptionAttribute
-      }
-    ]
+    Name: Value3,
+    RawValue: 3,
+    Value: Value3
   }
 ]

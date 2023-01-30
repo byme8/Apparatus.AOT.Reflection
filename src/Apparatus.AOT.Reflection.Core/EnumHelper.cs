@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Apparatus.AOT.Reflection.Core.Stores;
 
 namespace Apparatus.AOT.Reflection
@@ -17,6 +18,13 @@ namespace Apparatus.AOT.Reflection
             }
 
             return data.Value.Values;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TEnum FromInt<TEnum>(int value)
+            where TEnum : Enum
+        {
+            return Unsafe.As<int, TEnum>(ref value);
         }
     }
 }

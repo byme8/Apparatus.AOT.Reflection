@@ -43,7 +43,7 @@ public class AOTReflectionEnumsTests : Test
             "Program.cs",
             ("// place to replace 0", "enum TestEnum { Value2 = 2, Value3 = 3 }"));
 
-        var expected = await project.ExecuteTest("return EnumHelper.GetEnumInfo<UserKind>();");
+        var expected = await project.ExecuteTest("return EnumHelper.GetEnumInfo<TestEnum>();");
 
         await Verify(expected);
     }
@@ -56,6 +56,18 @@ public class AOTReflectionEnumsTests : Test
             ("// place to replace 0", "enum TestEnum { Value2 = 2, Value3 = 3 }"));
 
         var expected = await project.ExecuteTest("return TestEnum.Value2.ToInt();");
+
+        await Verify(expected);
+    }
+    
+    [Fact]
+    public async Task FromIntWorks()
+    {
+        var project = await TestProject.Project.ReplacePartOfDocumentAsync(
+            "Program.cs",
+            ("// place to replace 0", "enum TestEnum { Value2 = 2, Value3 = 3 }"));
+
+        var expected = await project.ExecuteTest("return EnumHelper.FromInt<TestEnum>(2);");
 
         await Verify(expected);
     }
