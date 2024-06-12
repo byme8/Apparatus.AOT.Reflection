@@ -4,18 +4,6 @@ using System.Linq;
 
 namespace Apparatus.AOT.Reflection
 {
-    public interface IEnumValueInfo<TEnum>
-        where TEnum : Enum
-    {
-        string Name { get; }
-        
-        Attribute[] Attributes { get; }
-        
-        int RawValue { get; }
-        
-        TEnum Value { get; }
-    }
-
     public class EnumValueInfo<TEnum> : IEnumValueInfo<TEnum>, IEquatable<EnumValueInfo<TEnum>>
         where TEnum : Enum
     {

@@ -14,6 +14,15 @@ public class AOTReflectionEnumsTests : Test
 
         await Verify(result);
     }
+    
+    [Fact]
+    public async Task CreateEnumFromIntWorks()
+    {
+        var project = TestProject.Project;
+        var result = await project.ExecuteTest("return EnumHelper.CreateOrDefault(1, UserKind.User);");
+
+        await Verify(result);
+    }
 
     [Fact]
     public async Task GetEnumValueInfoWorksWithAttributes()

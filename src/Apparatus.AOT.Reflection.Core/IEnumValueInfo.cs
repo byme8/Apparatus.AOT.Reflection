@@ -1,0 +1,16 @@
+﻿using System;
+
+namespace Apparatus.AOT.Reflection
+{
+    public interface IEnumValueInfo<TEnum>
+        where TEnum : Enum
+    {
+        string Name { get; }
+        
+        Attribute[] Attributes { get; }
+        
+        int RawValue { get; }
+        
+        TEnum Value { get; }
+    }
+}
