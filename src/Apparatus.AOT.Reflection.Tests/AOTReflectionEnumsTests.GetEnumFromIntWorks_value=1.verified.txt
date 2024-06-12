@@ -1,0 +1,11 @@
+﻿{
+  Name: Admin,
+  RawValue: 1,
+  Value: Admin,
+  Attributes: [
+    {
+      Description: Admin user,
+      TypeId: DescriptionAttribute
+    }
+  ]
+}
