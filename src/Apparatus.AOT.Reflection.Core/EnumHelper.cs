@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Apparatus.AOT.Reflection.Core.Stores;
@@ -45,15 +46,40 @@ namespace Apparatus.AOT.Reflection
 
             return data.Value[value].Name;
         }
-
-        public static IEnumValueInfo<TEnum> CreateOrDefault<TEnum>(int value, TEnum @default)
+        
+        public static IEnumValueInfo<TEnum>? Get<TEnum>(int value)
             where TEnum : Enum
         {
             var enumValue = FromInt<TEnum>(value);
-            return CreateOrDefault(enumValue, @default);
+            return Get(enumValue);
+        }
+        
+        public static IEnumValueInfo<TEnum>? Get<TEnum>(TEnum value)
+            where TEnum : Enum
+        {
+            var data = EnumMetadataStore<TEnum>.Data;
+            if (data is null)
+            {
+                throw new InvalidOperationException(
+                    $"Type '{typeof(TEnum).FullName}' is not registered. Use 'Apparatus.AOT.Reflection.GenericHelper.Bootstrap' to bootstrap it.");
+            }
+
+            if (IsDefined(value))
+            {
+                return data.Value[value];
+            }
+
+            return null;
         }
 
-        public static IEnumValueInfo<TEnum> CreateOrDefault<TEnum>(TEnum value, TEnum @default)
+        public static IEnumValueInfo<TEnum> GetOrDefault<TEnum>(int value, TEnum @default)
+            where TEnum : Enum
+        {
+            var enumValue = FromInt<TEnum>(value);
+            return GetOrDefault(enumValue, @default);
+        }
+
+        public static IEnumValueInfo<TEnum> GetOrDefault<TEnum>(TEnum value, TEnum @default)
             where TEnum : Enum
         {
             var data = EnumMetadataStore<TEnum>.Data;
