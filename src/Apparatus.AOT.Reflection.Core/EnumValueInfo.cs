@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -51,6 +52,8 @@ namespace Apparatus.AOT.Reflection
                 var hashCode = (Name != null ? Name.GetHashCode() : 0);
                 hashCode = (hashCode * 397) ^ Value.GetHashCode();
                 hashCode = (hashCode * 397) ^ (Attributes != null ? Attributes.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ Description?.GetHashCode() ?? 0;
+                
                 return hashCode;
             }
         }
@@ -65,16 +68,19 @@ namespace Apparatus.AOT.Reflection
             return !Equals(left, right);
         }
 
-        public EnumValueInfo(string name, int rawValue, TEnum value, Attribute[] attributes)
+        public EnumValueInfo(string name, string? description, int rawValue, TEnum value, Attribute[] attributes)
         {
             Name = name;
             RawValue = rawValue;
             Attributes = attributes;
+            Description = description;
             Value = value;
         }
 
         public string Name { get; }
         
+        public string? Description { get; }
+
         public int RawValue { get; }
 
         public TEnum Value { get; }

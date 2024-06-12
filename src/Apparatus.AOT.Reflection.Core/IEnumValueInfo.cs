@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 
 namespace Apparatus.AOT.Reflection
 {
@@ -6,6 +7,8 @@ namespace Apparatus.AOT.Reflection
         where TEnum : Enum
     {
         string Name { get; }
+        
+        string? Description { get; }
         
         Attribute[] Attributes { get; }
         

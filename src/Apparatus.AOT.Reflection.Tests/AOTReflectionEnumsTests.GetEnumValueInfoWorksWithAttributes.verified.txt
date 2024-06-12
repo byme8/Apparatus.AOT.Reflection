@@ -1,5 +1,6 @@
 ﻿{
   Name: Admin,
+  Description: Admin user,
   RawValue: 1,
   Value: Admin,
   Attributes: [

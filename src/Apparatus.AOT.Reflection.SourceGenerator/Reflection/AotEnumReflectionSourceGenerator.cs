@@ -108,7 +108,7 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.Reflection
                 .GetMembers()
                 .OfType<IFieldSymbol>()
                 .ToArray();
-
+            
             var source = $@"
 using System;
 using System.Linq;
@@ -129,6 +129,7 @@ namespace Apparatus.AOT.Reflection
 {fields.Select(o => $@"
             {{ {typeGlobalName}.{o.Name}, new EnumValueInfo<{typeGlobalName}>(
                 ""{o.Name}"", 
+                {(GetDescription(o) is string description ? $@"""{description}""" : "null")},
                 {o.ConstantValue},
                 {typeGlobalName}.{o.Name}, 
                 new Attribute[] 
@@ -143,6 +144,18 @@ namespace Apparatus.AOT.Reflection
 }}
 ";
             return source;
+        }
+
+        private static string? GetDescription(IFieldSymbol field)
+        {
+            var description = field.GetAttributes()
+                .FirstOrDefault(o => o.AttributeClass?.Name == "DescriptionAttribute")?
+                .ConstructorArguments
+                .FirstOrDefault()
+                .Value?
+                .ToString();
+            
+            return description;
         }
     }
 }
