@@ -16,7 +16,7 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.KeyOf
         {
             var keyOfs = parameters
                 .Where(o => o.RefKind != RefKind.Out)
-                .Select((o, i) => (Index: i, Type: (INamedTypeSymbol)o.Type))
+                .Select((o, i) => (Index: i, Type: o.Type as INamedTypeSymbol))
                 .Where(o => IsKeyOf(o.Type))
                 .ToArray();
 
@@ -87,19 +87,19 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.KeyOf
                     {
                         continue;
                     }
-                    
+
                     if (propertySymbol.Symbol is IParameterSymbol parameterSymbol &&
                         IsKeyOf(parameterSymbol.Type as INamedTypeSymbol))
                     {
                         continue;
                     }
-                    
+
                     if (propertySymbol.Symbol is IFieldSymbol fieldSymbol &&
                         IsKeyOf(fieldSymbol.Type as INamedTypeSymbol))
                     {
                         continue;
                     }
-                    
+
                     if (propertySymbol.Symbol is IPropertySymbol property &&
                         IsKeyOf(property.Type as INamedTypeSymbol))
                     {
@@ -132,10 +132,11 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.KeyOf
             }
         }
 
-        public static bool IsKeyOf(INamedTypeSymbol type)
-            => type.ConstructedFrom.ToString().StartsWith("Apparatus.AOT.Reflection.KeyOf<");
+        public static bool IsKeyOf(INamedTypeSymbol? type)
+            => type?.ConstructedFrom.ToString().StartsWith("Apparatus.AOT.Reflection.KeyOf<") ?? false;
 
         public static string Version { get; } = typeof(KeyOfAnalyzer).Assembly.GetName().Version.ToString();
+
         public static string CodeGenerationAttribute { get; } = $@"[System.CodeDom.Compiler.GeneratedCode(""AOT.Reflection"", ""{Version}"")]";
     }
 }
