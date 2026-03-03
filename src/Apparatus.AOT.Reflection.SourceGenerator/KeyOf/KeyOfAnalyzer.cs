@@ -1,18 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Operations;
 
 namespace Apparatus.AOT.Reflection.SourceGenerator.KeyOf
 {
     public class KeyOfAnalyzer
     {
         public static void AnalyzeKeyOfUsages(
-            SyntaxNodeAnalysisContext context,
-            IEnumerable<IParameterSymbol> parameters,
-            IEnumerable<ArgumentSyntax> arguments)
+            OperationAnalysisContext context,
+            ImmutableArray<IParameterSymbol> parameters,
+            ImmutableArray<IArgumentOperation> arguments)
         {
             var keyOfs = parameters
                 .Where(o => o.RefKind != RefKind.Out)
@@ -28,44 +27,19 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.KeyOf
             var valuesAsText = arguments
                 .Select((o, i) =>
                 {
-                    if (o.Expression is LiteralExpressionSyntax literal)
+                    var value = UnwrapConversion(o.Value);
+
+                    if (value.ConstantValue.HasValue)
                     {
-                        return (Index: i, o.Expression, Value: literal.Token.Text.Trim('"'));
+                        return (Index: i, Syntax: o.Syntax, Value: value.ConstantValue.Value?.ToString());
                     }
 
-                    if (o.Expression is InvocationExpressionSyntax expressionInvocation &&
-                        expressionInvocation.Expression is IdentifierNameSyntax identifier &&
-                        identifier.Identifier.Text == "nameof" &&
-                        expressionInvocation.ArgumentList.Arguments.First().Expression is ExpressionSyntax expression)
+                    if (value is INameOfOperation nameOf)
                     {
-                        if (expression is MemberAccessExpressionSyntax memberAccess)
-                        {
-                            return (Index: i, memberAccess.Name, Value: memberAccess.Name.Identifier.Text);
-                        }
-
-                        if (expression is IdentifierNameSyntax nameSyntax)
-                        {
-                            return (Index: i, nameSyntax, Value: nameSyntax.Identifier.Text);
-                        }
+                        return (Index: i, Syntax: o.Syntax, Value: nameOf.ConstantValue.Value?.ToString());
                     }
 
-                    var possibleConstant = context.SemanticModel
-                        .GetSpeculativeSymbolInfo(
-                            o.Expression.SpanStart,
-                            o.Expression,
-                            SpeculativeBindingOption.BindAsExpression);
-
-                    if (possibleConstant.Symbol is ILocalSymbol localSymbol && localSymbol.HasConstantValue)
-                    {
-                        return (Index: i, o.Expression, Value: localSymbol.ConstantValue.ToString());
-                    }
-
-                    if (possibleConstant.Symbol is IFieldSymbol fieldSymbol && fieldSymbol.HasConstantValue)
-                    {
-                        return (Index: i, o.Expression, Value: fieldSymbol.ConstantValue.ToString());
-                    }
-
-                    return (Index: i, o.Expression, null);
+                    return (Index: i, Syntax: o.Syntax, Value: (string)null);
                 })
                 .ToArray();
 
@@ -76,32 +50,10 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.KeyOf
 
                 if (propertyNameLiteral.Value == default)
                 {
-                    var propertySymbol = context.SemanticModel
-                        .GetSpeculativeSymbolInfo(
-                            propertyNameLiteral.Expression.SpanStart,
-                            propertyNameLiteral.Expression,
-                            SpeculativeBindingOption.BindAsExpression);
+                    var argValue = UnwrapConversion(arguments[index].Value);
+                    var argType = argValue.Type as INamedTypeSymbol;
 
-                    if (propertySymbol.Symbol is ILocalSymbol localSymbol &&
-                        IsKeyOf(localSymbol.Type as INamedTypeSymbol))
-                    {
-                        continue;
-                    }
-
-                    if (propertySymbol.Symbol is IParameterSymbol parameterSymbol &&
-                        IsKeyOf(parameterSymbol.Type as INamedTypeSymbol))
-                    {
-                        continue;
-                    }
-
-                    if (propertySymbol.Symbol is IFieldSymbol fieldSymbol &&
-                        IsKeyOf(fieldSymbol.Type as INamedTypeSymbol))
-                    {
-                        continue;
-                    }
-
-                    if (propertySymbol.Symbol is IPropertySymbol property &&
-                        IsKeyOf(property.Type as INamedTypeSymbol))
+                    if (IsKeyOf(argType))
                     {
                         continue;
                     }
@@ -109,7 +61,7 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.KeyOf
                     context.ReportDiagnostic(
                         Diagnostic.Create(
                             DiagnosticDescriptors.ImpossibleToGetThePropertyName,
-                            propertyNameLiteral.Expression.GetLocation()));
+                            propertyNameLiteral.Syntax.GetLocation()));
                     continue;
                 }
 
@@ -125,11 +77,21 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.KeyOf
                     context.ReportDiagnostic(
                         Diagnostic.Create(
                             DiagnosticDescriptors.TypeDoesntContainsPropertyWithSuchName,
-                            propertyNameLiteral.Expression.GetLocation(),
+                            propertyNameLiteral.Syntax.GetLocation(),
                             propertyName,
                             type.TypeArguments.First().ToDisplayString()));
                 }
             }
+        }
+
+        private static IOperation UnwrapConversion(IOperation operation)
+        {
+            while (operation is IConversionOperation conversion)
+            {
+                operation = conversion.Operand;
+            }
+
+            return operation;
         }
 
         public static bool IsKeyOf(INamedTypeSymbol? type)

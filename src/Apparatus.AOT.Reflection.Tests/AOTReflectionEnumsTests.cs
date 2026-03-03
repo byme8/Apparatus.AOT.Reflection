@@ -3,7 +3,6 @@ using Apparatus.AOT.Reflection.Tests.Utils;
 
 namespace Apparatus.AOT.Reflection.Tests;
 
-[UsesVerify]
 public class AOTReflectionEnumsTests : Test
 {
     [Fact]

@@ -1,8 +1,7 @@
 ﻿using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Operations;
 
 namespace Apparatus.AOT.Reflection.SourceGenerator.KeyOf
 {
@@ -13,31 +12,30 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.KeyOf
         {
             context.EnableConcurrentExecution();
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
-            context.RegisterSyntaxNodeAction(Handle, SyntaxKind.ElementAccessExpression);
+            context.RegisterOperationAction(Handle, OperationKind.PropertyReference);
         }
 
-        private void Handle(SyntaxNodeAnalysisContext context)
+        private void Handle(OperationAnalysisContext context)
         {
-            if (!(context.Node is ElementAccessExpressionSyntax indexExpression))
+            if (context.Operation is not IPropertyReferenceOperation propertyReference)
             {
                 return;
             }
 
-            var possibleMethodSymbol = context.SemanticModel.GetSpeculativeSymbolInfo(indexExpression.SpanStart, indexExpression, SpeculativeBindingOption.BindAsExpression);
-            if (!(possibleMethodSymbol.Symbol is IPropertySymbol propertySymbol))
+            if (propertyReference.Arguments.IsEmpty)
             {
                 return;
             }
 
             KeyOfAnalyzer.AnalyzeKeyOfUsages(
                 context,
-                propertySymbol.Parameters,
-                indexExpression.ArgumentList.Arguments);
+                propertyReference.Property.Parameters,
+                propertyReference.Arguments);
         }
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; }
             = ImmutableArray.Create(
-                DiagnosticDescriptors.TypeDoesntContainsPropertyWithSuchName, 
+                DiagnosticDescriptors.TypeDoesntContainsPropertyWithSuchName,
                 DiagnosticDescriptors.ImpossibleToGetThePropertyName);
     }
 }

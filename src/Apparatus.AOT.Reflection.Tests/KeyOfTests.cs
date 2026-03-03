@@ -1,13 +1,8 @@
-﻿using System;
-using System.Reflection;
-using System.Threading.Tasks;
-using Apparatus.AOT.Reflection.Tests.Data;
+﻿using Apparatus.AOT.Reflection.Tests.Data;
 using Apparatus.AOT.Reflection.Tests.Utils;
-using Xunit;
 
 namespace Apparatus.AOT.Reflection.Tests
 {
-    [UsesVerify]
     public class KeyOfTests : Test
     {
         [Fact]

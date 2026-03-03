@@ -3,6 +3,7 @@ using System.Reflection;
 using Apparatus.AOT.Reflection.SourceGenerator.KeyOf;
 using Apparatus.AOT.Reflection.SourceGenerator.Reflection;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 
@@ -70,6 +71,24 @@ public static class TestExtensions
     public static async Task<Assembly> CompileToRealAssembly(this Project project)
     {
         var compilation = await project.GetCompilationAsync();
+        if (compilation is null)
+        {
+            throw new NullReferenceException("Compilation is null");
+        }
+
+        var generators = new IIncrementalGenerator[]
+        {
+            new AotPropertiesReflectionSourceGenerator(),
+            new AotEnumReflectionSourceGenerator(),
+        };
+
+        var driver = CSharpGeneratorDriver.Create(generators);
+        driver.RunGeneratorsAndUpdateCompilation(
+            compilation,
+            out var updatedCompilation,
+            out _);
+        compilation = updatedCompilation;
+
         var analyzerResults = await compilation
             .WithAnalyzers(ImmutableArray.Create(new DiagnosticAnalyzer[]
             {

@@ -1,8 +1,7 @@
-﻿using System.Collections.Immutable;
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Operations;
 
 namespace Apparatus.AOT.Reflection.SourceGenerator.KeyOf
 {
@@ -13,26 +12,20 @@ namespace Apparatus.AOT.Reflection.SourceGenerator.KeyOf
         {
             context.EnableConcurrentExecution();
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
-            context.RegisterSyntaxNodeAction(Handle, SyntaxKind.InvocationExpression);
+            context.RegisterOperationAction(Handle, OperationKind.Invocation);
         }
 
-        private void Handle(SyntaxNodeAnalysisContext context)
+        private void Handle(OperationAnalysisContext context)
         {
-            if (!(context.Node is InvocationExpressionSyntax invocation))
-            {
-                return;
-            }
-
-            var possibleMethodSymbol = context.SemanticModel.GetSpeculativeSymbolInfo(invocation.SpanStart, invocation, SpeculativeBindingOption.BindAsExpression);
-            if (!(possibleMethodSymbol.Symbol is IMethodSymbol methodSymbol))
+            if (!(context.Operation is IInvocationOperation invocation))
             {
                 return;
             }
 
             KeyOfAnalyzer.AnalyzeKeyOfUsages(
                 context,
-                methodSymbol.Parameters,
-                invocation.ArgumentList.Arguments);
+                invocation.TargetMethod.Parameters,
+                invocation.Arguments);
         }
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; }
